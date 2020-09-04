@@ -1,5 +1,10 @@
 # Red-Alert-3-Battle-Flow-Chart
+
+[View in Chinese(查看中文版说明)](https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart/blob/master/README_ZH.md)
+
 A tool to draw flow chart for ra3 battle
+Open main.html in your browser(Chrome is recommended), then you can draw.
+
 - 2020-9-4
 Verson 1.0 of the project will be completed in two weeks.
 
