@@ -1,0 +1,11 @@
+/* for custom select, which is used in the header nav */
+.custom-select select{
+    width: 120px;
+    height: 30px;
+    border: 1px solid #028aff;
+    font-size: 18px;
+    color: #028aff;
+    background-color: #eee;
+    border-radius: 5px;
+}
+

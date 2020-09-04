@@ -1,0 +1,5 @@
+<div class="cell-node" id="r0c0" style="margin-left: 100px;margin-top: 100px;width: 100px;height: 100px;">
+            <img src="images/nodes/soviet/Production/Construcion Yard.png">
+            </div>
+            <div class="node-button-1 add-node" style="margin-left: 200px;margin-top: 135px;"><img src="images/icons/add.png"></div>
+            <div class="node-button-1 add-row"><img src="images/icons/add_row.png"></div>

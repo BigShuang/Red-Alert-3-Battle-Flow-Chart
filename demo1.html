@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TEST</title>
+        <script src = "node_modules/jquery/dist/jquery.js"></script>
+        <style type="text/css">
+            * {
+                margin: 0;
+                padding: 0;
+
+            }
+
+            .box{
+                width: 100px;
+                height: 100px;
+                display: block;
+                position: fixed;
+            }
+
+            .box1 {
+                background-color: red;
+                margin-left: 0;
+                margin-top: 0;
+            }
+
+            .box2 {
+                background-color: blue;
+                margin-left: 0;
+                margin-top: 100px;
+            }
+
+            .box3 {
+                background-color: green;
+                margin-left: 100px;
+                margin-top: 100px;
+            }
+        </style>
+        <script>
+            $(document).ready(function(){
+            
+            $win = $(".moveWindow")
+            $win.bind("mousedown",function(event){
+                /* 获取需要拖动节点的坐标 */
+                var offset_x = $(this)[0].offsetLeft;//x坐标
+                var offset_y = $(this)[0].offsetTop;//y坐标
+                /* 获取当前鼠标的坐标 */
+                var mouse_x = event.pageX;
+                var mouse_y = event.pageY;
+                console.log("click mouse xy: ",mouse_x, mouse_y)
+                /* 绑定拖动事件 */
+
+                $(this).bind("mousemove",function(ev){
+                    /* 计算鼠标移动了的位置 */
+                    var _x = ev.pageX - mouse_x;
+                    var _y = ev.pageY - mouse_y;
+                    console.log("mouse move xy: ",_x, _y)
+                    
+                    /* 设置移动后的元素坐标 */
+                    var now_x = (offset_x + _x ) + "px";
+                    var now_y = (offset_y + _y ) + "px";
+
+                    console.log("result xy: ",now_x, now_y)
+                    /* 改变目标元素的位置 */
+                    $(this).css({
+                        "margin-top":now_y,
+                        "margin-left":now_x
+                    })
+                })
+            })
+
+            /* 当鼠标左键松开，接触事件绑定 */
+            $win.bind("mouseup",function(){
+                $(this).unbind("mousemove");
+            })
+
+            $win.bind("mouseleave",function(){
+                $(this).unbind("mousemove");
+            })
+        })
+        </script>
+    </head>
+
+    <body>
+        <div class="box box1">box111</div>
+        <div class="box box2">box222</div>
+        <div class="box box3 moveWindow" id="moveWindow">box333</div>
+    </body>
+</html>
