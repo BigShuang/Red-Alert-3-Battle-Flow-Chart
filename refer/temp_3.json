@@ -1,0 +1,251 @@
+{
+  "camp":"Soviet",
+  "root": "r0c0",
+  "data": [
+    [
+      {
+        "country": "Soviet",
+        "kind": "Production",
+        "name": "RA3 Soviet Construction Yard Icons",
+        "type": "unit",
+        "start_time": 10
+      },
+      {
+        "kind": "unused",
+        "duration": 5,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 20,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Crusher Crane Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 4,
+        "type": "line"
+      },
+      {
+        "kind": "move",
+        "duration": 27,
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 6,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 10,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Barracks Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 14,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 10,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Reactor Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 37,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 20,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 War Factory Icons"
+        },
+        "type": "line"
+      }
+    ],
+    [
+      null,
+      null,
+      {
+        "country": "Soviet",
+        "kind": "Production",
+        "name": "RA3 Crusher Crane Icons",
+        "type": "unit",
+        "row_prev": 0
+      },
+      {
+        "kind": "unused",
+        "duration": 2,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 16,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Reactor Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 3,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 20,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Soviet Ore Refinery Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 3,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 20,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Soviet Ore Refinery Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 2,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 33,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Soviet Ore Refinery Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "unused",
+        "duration": 19,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 10,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Production",
+          "name": "RA3 Reactor Icons"
+        },
+        "type": "line"
+      }
+    ],
+    [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      {
+        "country": "Soviet",
+        "kind": "Production",
+        "name": "RA3 Barracks Icons",
+        "type": "unit",
+        "row_prev": 0
+      },
+      {
+        "kind": "unused",
+        "duration": 2,
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 3,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 War Bear Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 3,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 War Bear Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 12,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 Combat Engineer Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 7,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 Concript Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 10,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 Flak Trooper Icons"
+        },
+        "type": "line"
+      },
+      {
+        "kind": "success",
+        "duration": 7,
+        "unit": {
+          "country": "Soviet",
+          "kind": "Infantry",
+          "name": "RA3 War Bear Icons"
+        },
+        "type": "line"
+      }
+    ]
+  ]
+}

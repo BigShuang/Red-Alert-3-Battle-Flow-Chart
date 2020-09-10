@@ -1,5 +1,5 @@
-/* for custom select, which is used in the header nav */
-.custom-select select{
+/* for custom select, which is used in the begining */
+.custom-select{
     width: 120px;
     height: 30px;
     border: 1px solid #028aff;
@@ -7,5 +7,158 @@
     color: #028aff;
     background-color: #eee;
     border-radius: 5px;
+    padding: 0;
+    box-sizing: content-box;
 }
 
+.menu-button {
+    line-height: 40px;
+    margin: 0 10px;
+    padding: 0 10px;
+    height: 100%;
+    background-color: #444;
+    color: #fff;
+    vertical-align: top;
+    font-weight: 500;
+    display: inline-block;
+
+}
+
+.mask-layer {
+    display: none;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background: #000;
+    z-index: 99;
+    opacity: 0.5;
+}
+
+.popup-box {
+    margin: auto auto;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background-color: #ccc;
+    z-index: 100;
+    display: none;
+
+    padding:10px;
+}
+
+.popup-box h3 {
+    margin: 10px;
+}
+
+.popup-box textarea {
+    display: block;
+    width: 380px;
+    margin: auto;
+    position: unset;
+}
+
+
+.button-list {
+    padding: 5px;
+    width: 380px;
+    margin: auto;
+    font-size: 0;
+}
+
+.button-list input[type="button" i] {
+    width: 85px;
+    line-height: 30px;
+    background-color: #fff;
+    color: #000;
+    border-radius: 3px;
+    padding: 5px 15px;
+    font-size: 16px;
+    margin: 5px;
+}
+
+#pupup-button-return{
+    border: 2px solid #555555;
+}
+#pupup-button-copy{
+    border: 2px solid #4CAF50; /* Green */
+}
+#pupup-button-load{
+    border: 2px solid #008CBA; /* Blue */
+}
+/* #pupup-button-load{
+    border: 2px solid #d35400;
+} */
+
+
+/* for time line */
+.time-line {
+    position: absolute;
+    margin-top: 100px;
+    margin-left: 50px;
+    height:50px;
+    border-bottom:5px #999 solid;
+    overflow: hidden;
+}
+
+.time-line .time-notes {
+    height: 20px;
+    /* background-color:#888 */
+}
+.time-line .time-axis {
+    white-space: nowrap;
+}
+
+.time-line .time-scale {
+    display: inline-block;
+    width: 300px;
+    text-align: center
+}
+
+.time-line .time-scale:before {
+    content:'';
+    display: block;
+    width: 300px;
+    position: absolute;
+    height: 10px;
+    bottom:0px;
+    margin-left: -150px;
+}
+
+.time-line .time-scale:before{
+    background: linear-gradient(to right,rgba(0,0,0,0) 90%,rgba(0,0,0,1) 95%,rgba(0,0,0,0) 100%);
+    background-size: 50px;
+}
+
+
+/* the board to show info of the line */
+.icon-info-board {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    margin-left: 10px;
+    margin-bottom: 10px;
+    font-size: 12px;
+}
+
+.icon-info-board li {
+    margin-bottom: 5px;
+}
+
+.icon-info-board span {
+    display: inline-block;
+    height: 20px;
+    line-height: 20px;
+    font-size: 16px;
+    vertical-align: top;
+}
+
+.icon-info-board .line{
+    margin-top: 3px;
+    margin-right:10px;
+    height: 14px;
+    width: 70px;
+}

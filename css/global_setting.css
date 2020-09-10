@@ -5,6 +5,10 @@
     overflow: hidden;
 }
 
+.basic-node.cell-node {
+    border-radius: 15px;
+}
+
 .medium-size-cell {
     width: 40px;
     height:40px;

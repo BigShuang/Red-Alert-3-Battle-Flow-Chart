@@ -19,9 +19,10 @@ ul, li {
     width: 100%;
     height: 6%;
     background: #777;
+    z-index: 5;
 }
 
-.header-nav >div {
+.header-nav .nav-item {
     vertical-align: top;
     display: inline-block;
     line-height: 36px;
@@ -42,6 +43,27 @@ ul, li {
     position: absolute;
 }
 
+.main-board .begin-tip {
+    font-size: 26px;
+    color: #555;
+    width: max-content;
+    margin: 200px auto;
+    height: max-content;
+    position: relative;
+}
+
+.main-board .begin-tip * {
+    vertical-align: top;
+}
+
+.main-board .begin-tip .begin-draw {
+    text-align: center;
+    margin-top: 20px;
+    padding: 5px;
+    background: #aaa;
+    border-radius: 10px;
+}
+
 .row {
     position: fixed;
 }
@@ -52,6 +74,7 @@ img{
 
 /* for sider bar menu */
 .sidebar {
+    display: none;
     position: absolute;
     right: 100px;
     top: 100px;
@@ -179,4 +202,11 @@ ul.menu-unit-items.active-menu{
 }
 .line-menu input[type="number" i] {
     width:50px;
+}
+
+
+/* for vertical line that connect line node and unit node in a new row  */
+.col-line {
+    background-color: #32CD32;
+    width: 10px;
 }

@@ -8,18 +8,13 @@ var SIZE = {
 var BOARD = {
     px: 100,
     py: 200,
-    hrate: 1.5
+    hrate: 1.5,
+    CLW: 10,  // col line width, Associated with css width of col line
+    RLW: 12, // row line width
 }
 
+var CAMPS = ["Soviet", "Allied", "Imperial"]
 
-var STATECOLORS = {
-    "wait": "#999999",  // 灰色
-    "move": "#FFA500",  // 橙色
-    "done": "#32CD32",  // 绿色
-    "success": "#4169E1",  // 蓝色
-    "fail": "#FF69B4",  // 粉红色
-    "record": "#8A2BE2"  // 紫色
-}
 
 var LINE_KINDS = ["success", "fail", "move", "unused"]
     
@@ -37,7 +32,15 @@ var TEXTS = {
     "confirm": "confirm",
     "change_camp_hit": "Modifying the state discards the existing node data.\n"
         +"If you do not save the data, it is recommended to cancel the modification and save it first.\n"
-        +"Are you sure you want to modify it?\n"
+        +"Are you sure you want to modify it?\n",
+    "line_kinds": ["success", "fail", "move", "unused"],
+
+    
 }
 
 
+var TIMELINE = {
+    min_unit: 30,
+    init: 2,
+
+}

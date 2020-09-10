@@ -12,16 +12,33 @@
         <script src = "js/util.js"></script>
         <script src = "js/mynode.js"></script>
         <script src = "js/main.js"></script>
+
+        <script>
+            // for some test
+            // var data_t1 = {
+            //     "a": "aaa",
+            //     "b": "bbb",
+            //     "li": {
+            //         "la": "123",
+            //         "lb": "135"
+            //     }
+            // }
+            // var data_t1_str = JSON.stringify(data_t1, null, '\t')
+
+            function test_1(a,b = "b"){
+                console.log(a,b)
+            }
+        </script>
     </head>
+
+
     <body>
         <div class="header-nav">
-            <div>Current Country</div>
-            <div class="custom-select">
-                <select id="camp-select" onChange="ChangeCamp(this.value)">
-                    <option value="Soviet">Soviet</option>
-                    <option value="Allied">Allied</option>
-                    <option value="Imperial">Imperial</option>
-                  </select>
+            <div class="nav-item">Current Country: </div>
+            <div class="nav-item" id="current-camp" style="width: 60px"></div>
+            <div class="menu-button save-load-button">Save&Load</div>
+            <div class="menu-button clict-to-deselect">
+                Click here to deselect the current node
             </div>
         </div>
         <div class="sidebar">
@@ -31,8 +48,34 @@
             </div>
         </div>
 
-        <div class="main-board">
-            
+        <div class="time-line">
+            <div class="time-notes">
+            </div>
+            <div class="time-axis" id="time-axis">
+
+            </div>
         </div>
+
+        <div class="main-board">
+        </div>
+
+        <ul class="icon-info-board">
+        </ul>
+
+        <!-- for popup window, save or load -->
+        <div class="popup alert mask-layer"></div>
+        <div class="popup popup-box">
+            <h3>Data:</h3>
+            <textarea rows="15" id="nodes-data"></textarea>
+            <div class="button-list">
+                <input type="button" id="pupup-button-return" value="return">
+                <input type="button" id="pupup-button-copy" value="copy">
+                <input type="button" id="pupup-button-load" value="load">
+            </div>
+        </div>
+
     </body>
+    <script>
+        // for test
+    </script>
 </html>
