@@ -5,7 +5,7 @@
 用浏览器（推荐chromw）打开 主页.html 即可开始绘制
 
 #### 流程图绘制效果如下：
-![](https://upload-images.jianshu.io/upload_images/17322436-2255b0eece35b764.png?imageMogr2/auto-orient/strip|imageView2/2/w/1200/format/webp)
+![](https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart/blob/master/output/BV1GE411r79W_3_ps.png)
 
 对应的录像视频是[BV1GE411r79W](https://www.bilibili.com/video/BV1GE411r79W)
 
