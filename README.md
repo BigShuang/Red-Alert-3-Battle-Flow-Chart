@@ -12,12 +12,13 @@ Open main.html in your browser(Chrome is recommended), then you can draw.
 The video corresponding to this chart is [BV1GE411r79W](https://www.bilibili.com/video/BV1GE411r79W)
 
 ## FAQ
-- how to export the chart after drawing?
-  I haven't implemented the image export function, but you can use the screenshot API provided by chrome to take screenshots as follows
-  In chrome, Ctrl + Shift + I open devtools
-  In devtools, Ctrl + Shift + P opens the command menu
-  Enter `screenshot` in the command menu
-  Click `capture full size screenshot` to complete the screenshot.
+- **How to export the chart after drawing?**
+
+I haven't implemented the image export function, but you can use the screenshot API provided by chrome to take screenshots as follows
+In chrome, Ctrl + Shift + I open devtools
+In devtools, Ctrl + Shift + P opens the command menu
+Enter `screenshot` in the command menu
+Click `capture full size screenshot` to complete the screenshot.
 
 ## Progress description
 - 2020-9-4

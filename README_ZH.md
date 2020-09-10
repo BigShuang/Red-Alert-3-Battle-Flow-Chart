@@ -11,12 +11,13 @@
 
 
 ## 常见问题
-- 绘制完成后如何截图?
-  我没有实现图片导出功能，不过你可以用chrome自带的截图api来截图，方法如下
-  在chrome中, CTRL+SHIFT+I 打开开发者工具（DevTools）
-  在开发者工具（DevTools）中，CTRL+SHIFT+P打开命令菜单（Command Menu）
-  在命令菜单中输入 screenshot
-  单击capture full size screenshot即完成截图。
+- **绘制完成后如何截图?**
+  
+我没有实现图片导出功能，不过你可以用chrome自带的截图api来截图，方法如下
+在chrome中, CTRL+SHIFT+I 打开开发者工具（DevTools）
+在开发者工具（DevTools）中，CTRL+SHIFT+P打开命令菜单（Command Menu）
+在命令菜单中输入 screenshot
+单击capture full size screenshot即完成截图。
 
 
 ## 进度时间表
