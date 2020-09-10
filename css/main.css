@@ -1,7 +1,6 @@
 html,body {
     margin:0;
     padding:0;
-    background-color: #ddd; 
 }
 
 ul, li {
@@ -29,7 +28,9 @@ ul, li {
     height: 36px;
     padding: 2px 5px;
 }
-
+.header-nav #current-camp {
+    font-weight: bold;
+}
 
 .main-board {
     position: absolute;
@@ -195,7 +196,7 @@ ul.menu-unit-items.active-menu{
 }
 
 .line-menu li {
-    width: 80px;
+    width: 99px;
     height: 18px;
     white-space:nowrap;
     display: inline-block;

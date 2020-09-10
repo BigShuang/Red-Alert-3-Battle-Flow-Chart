@@ -82,10 +82,10 @@ function show_side_bar_for_line_node(camp, cur_node) {
     for (lk of LINE_KINDS){
         if(lk == line_kind){
             node_html += `<li><input type="radio" name="line-kind" value="${lk}" id="${lk}-line" checked>
-            <label class="${lk}-line-text" for="${lk}-line">${lk}</label></li>`
+            <label class="${lk}-line-text" for="${lk}-line">${TEXTS.line_kinds[lk]}</label></li>`
         }else{
             node_html += `<li><input type="radio" name="line-kind" value="${lk}" id="${lk}-line">
-            <label class="${lk}-line-text" for="${lk}-line">${lk}</label></li>`
+            <label class="${lk}-line-text" for="${lk}-line">${TEXTS.line_kinds[lk]}</label></li>`
         }
     }
 
@@ -141,9 +141,9 @@ function show_side_bar_for_line_node(camp, cur_node) {
 
 function set_node_menu(camp, html) {
     var camp_imgs = node_imgs[camp]
-    for(kind in camp_imgs){
+    for(kind of KIND_MENU){
         var menu_kind = kind.split(" ").join("_")
-        html += `<div class="kind-menu"><h3 data-kind-name="${menu_kind}" data>${kind}</h3>`
+        html += `<div class="kind-menu"><h3 data-kind-name="${menu_kind}">${TEXTS.kind_menu[kind]}</h3>`
         html += `<ul class="menu-unit-items menu-${menu_kind}">`
         for(unit in camp_imgs[kind]){
             html += `<li data-unit-kind="${kind}" data-unit-name="${unit}"><img src="${camp_imgs[kind][unit]}"></li>`
@@ -153,6 +153,9 @@ function set_node_menu(camp, html) {
     html += `</div>`
     $("#bar-body").html(html)
     $(".sidebar").show()
+
+    $($(".nodes-menu .kind-menu h3")[0]).addClass("active-menu")
+    $($(".nodes-menu .kind-menu .menu-unit-items")[0]).addClass("active-menu")
 
     // Click to expand or collapse the items of node kind menu
     $(".kind-menu h3").on("click", function(){
@@ -221,9 +224,9 @@ function refresh_timeline(){
 function show_icon_info(){
     var html = ""
     for (lk of LINE_KINDS){
-        html += `<li><span class="line ${lk}-line"></span><span class="${lk}-line-text">${lk}</span></li>`
+        html += `<li><span class="line ${lk}-line"></span><span class="${lk}-line-text">${TEXTS.line_kinds[lk]}</span></li>`
     }
-    html += `<li>Offline numbers are time consuming</li>`
+    html += `<li>${TEXTS.info["1"]}</li>`
 
     $(".icon-info-board").html(html)
 }

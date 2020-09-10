@@ -1,5 +1,3 @@
-## 【红警三】建造出兵流程图制作工具——基于jquery实现
-
 > 红警三玩家该如何提高自己的技术水平呢？
 > 一种非常有效的方法是去观看下大佬的录像进行学习。
 > 但是光看一遍，很多地方都记不住。反复看又过于费时（且红警三自带的录像播放工具也不支持倒放和直接跳到想看的时间点，也不方便）
@@ -9,15 +7,16 @@
 > 基于这一想法，我想尝试去用流程图去记录展示玩家的一些操作。
 
 ## 一、该流程图主要用于记录展示玩家建造和出兵的操作。
-其他的操作看后续是否能够整合进来，因为有的操作流程图可以整合进来展示，
+> 其他的操作看后续是否能够整合进来，因为有的操作流程图可以整合进来展示，
 有的则不好弄（比如具体到兵和敌人的对战操作，这个看后面是否发现新的适合展示的图表形式吧）
-**目前流程图效果可以参考这个：**
-![图1-1](https://upload-images.jianshu.io/upload_images/17322436-2255b0eece35b764.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-这是我之前用python做的老版本，对应的录像视频是[BV1GE411r79W](https://www.bilibili.com/video/BV1GE411r79W)
 
-目前新版本的将使用jQuery做，细节上将还会有很多不同。
-本文会简单说下，具体的会在对应的github上的细说
-本项目对应github地址：
+#### 流程图绘制效果如下
+![](https://upload-images.jianshu.io/upload_images/17322436-b65f6e4c3592f40b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+
+对应的录像视频是[BV1GE411r79W](https://www.bilibili.com/video/BV1GE411r79W)
+
+本项目1.0 版本已完成（未详细测试）
+对应github地址：
 [https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart](https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart)
 
 ## 二、当前进度与功能。
@@ -32,7 +31,6 @@
 ####  时间线：
 - 2020年9月4日
 已经做好了大部分了，还有些也是很重要的功能要补充，预计这两周内应该就能好（希望不是flag）。
-
 
 ## 三、未来规划
 首先，1.0我肯定会完成的（除非遇到不可抗力）
@@ -65,4 +63,3 @@ ps: 有些问题这辈子可能解决不了了，等下被子吧（逃
 说不定完成后，我没脸找人支持了（逃
 
 ## 五、相关推荐
-TODO

@@ -7,23 +7,6 @@ function set_selected_camp() {
     $("#camp-select").val(cur_camp);
 }
 
-// function ChangeCamp(camp){
-//     if(NODE_DATA.data.length > 0){
-//         var r = confirm(TEXTS["change_camp_hit"]);
-//         if (r == true) {
-//             cur_camp = camp
-//             NODE_DATA = {
-//                 root: null,
-//                 data:[]
-//             }
-//         } else {
-//             set_selected_camp()
-//         }
-//     }else{
-//         cur_camp = camp
-//     }
-// }
-
 function ClickNode(node_id){
     var rc = node_id.slice(1).split("c")
     var nr = parseInt(rc[0])
@@ -331,13 +314,13 @@ function deselect_current(){
 }
 
 function init_board(){
-    var html=`<div class="begin-tip"><div>Select Country: <select class="custom-select" id="camp-select">`
+    var html=`<div class="begin-tip"><div>${TEXTS.init.select_country}: <select class="custom-select" id="camp-select">`
     for(camp of CAMPS){
-        html += `<option value="${camp}">${camp}</option>`
+        html += `<option value="${camp}">${TEXTS.camps[camp]}</option>`
     }
-    html += `</select>Start time: <input class="custom-select" type="number" name="start-time" value="0"/>
+    html += `</select>${TEXTS.init.start_time}: <input class="custom-select" type="number" name="start-time" value="0"/>
         </div>
-        <div class="begin-draw">First, choose the camp and set start time<br>Then double click here to start drawing</div>
+        <div class="begin-draw">${TEXTS.init.first}<br>${TEXTS.init.then}</div>
     </div>`
 
     $(".main-board").html(html)
@@ -347,7 +330,7 @@ function init_board(){
         function(){
             if(NODE_DATA.data.length == 0) {
                 cur_camp = $("#camp-select").val()
-                $("#current-camp").html(cur_camp);
+                $("#current-camp").html(TEXTS.camps[cur_camp]);
                 var start_time = $('input[type="number"][name="start-time"]').val()
                 start_time = parseInt(start_time)
                 $(".main-board").html("")
@@ -392,6 +375,7 @@ function generate_html_from_json(json){
     }
 
     cur_camp = json_data.camp
+    $("#current-camp").html(TEXTS.camps[cur_camp]);
     var rc = json_data.root.slice(1).split("c")
     var nr = parseInt(rc[0])
     var nc = parseInt(rc[1])

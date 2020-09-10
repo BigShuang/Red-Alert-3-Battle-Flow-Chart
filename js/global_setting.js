@@ -17,7 +17,7 @@ var CAMPS = ["Soviet", "Allied", "Imperial"]
 
 
 var LINE_KINDS = ["success", "fail", "move", "unused"]
-    
+var KIND_MENU = ["Production", "Defenses", "Infantry", "Vehicles", "Aircraft", "Vessels"]
 
 var PATH = {
     image: "images",
@@ -26,18 +26,6 @@ var PATH = {
 
     wrong_1: "Invalid image path",
 }
-
-var TEXTS = {
-    "duration": "time(s)",
-    "confirm": "confirm",
-    "change_camp_hit": "Modifying the state discards the existing node data.\n"
-        +"If you do not save the data, it is recommended to cancel the modification and save it first.\n"
-        +"Are you sure you want to modify it?\n",
-    "line_kinds": ["success", "fail", "move", "unused"],
-
-    
-}
-
 
 var TIMELINE = {
     min_unit: 30,

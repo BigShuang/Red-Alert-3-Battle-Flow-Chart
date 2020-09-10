@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Ra3 Flow Chart</title>
+        <title>红警三建造出兵流程图</title>
         <link rel="stylesheet" type="text/css" href="css/main.css">
         <link rel="stylesheet" type="text/css" href="css/global_setting.css">
         <link rel="stylesheet" type="text/css" href="css/components.css">
 
         <script src = "node_modules/jquery/dist/jquery.js"></script>
         <script src = "js/global_setting.js"></script>
-        <script src = "js/text.js"></script>
+        <script src = "js/zh_text.js"></script>
         <script src = "js/info.js"></script>
         <script src = "js/util.js"></script>
         <script src = "js/mynode.js"></script>
@@ -22,15 +22,15 @@
 
     <body>
         <div class="header-nav">
-            <div class="nav-item">Current Country: </div>
+            <div class="nav-item">当前阵营：</div>
             <div class="nav-item" id="current-camp" style="width: 60px"></div>
-            <div class="menu-button save-load-button">Save&Load</div>
+            <div class="menu-button save-load-button">保存&加载</div>
             <div class="menu-button clict-to-deselect">
-                Click here to deselect the current node
+                单击此处取消选择当前节点
             </div>
         </div>
         <div class="sidebar">
-            <div class="bar-name float-window-bar">Tool Bar</div>
+            <div class="bar-name float-window-bar">工具栏</div>
             <div class="bar-body" id="bar-body">
                 
             </div>
@@ -53,12 +53,12 @@
         <!-- for popup window, save or load -->
         <div class="popup alert mask-layer"></div>
         <div class="popup popup-box">
-            <h3>Data:</h3>
+            <h3>当前数据:</h3>
             <textarea rows="15" id="nodes-data"></textarea>
             <div class="button-list">
-                <input type="button" id="pupup-button-return" value="return">
-                <input type="button" id="pupup-button-copy" value="copy">
-                <input type="button" id="pupup-button-load" value="load">
+                <input type="button" id="pupup-button-return" value="返回">
+                <input type="button" id="pupup-button-copy" value="复制">
+                <input type="button" id="pupup-button-load" value="加载">
             </div>
         </div>
 
