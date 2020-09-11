@@ -34,6 +34,8 @@ var node_imgs = {
             "RA3 Defense Bureau Icons": "images/nodes/Allied/Production/RA3 Defense Bureau Icons.png",
             "RA3 Power Plant Icons": "images/nodes/Allied/Production/RA3 Power Plant Icons.png",
             "RA3 Seaport Icons": "images/nodes/Allied/Production/RA3 Seaport Icons.png",
+            "RA3_Heightened_Clearance_Icons": "images/nodes/Allied/Production/RA3_Heightened_Clearance_Icons.png",
+            "RA3_Maximum_Clearance_Icons": "images/nodes/Allied/Production/RA3_Maximum_Clearance_Icons.png",
         },
         "Superweapons": {
             "RA3 Chronoshift Icons": "images/nodes/Allied/Superweapons/RA3 Chronoshift Icons.png",
@@ -103,6 +105,8 @@ var node_imgs = {
             "RA3 Tankbuster Icons": "images/nodes/Imperial/Infantry/RA3 Tankbuster Icons.png",
             "RA3 Yuriko Omega Icons": "images/nodes/Imperial/Infantry/RA3 Yuriko Omega Icons.png",
             "RA3U Archer Maiden Icons": "images/nodes/Imperial/Infantry/RA3U Archer Maiden Icons.png",
+            "RA3_Breakthrough_Icons": "images/nodes/Imperial/Infantry/RA3_Breakthrough_Icons.png",
+            "RA3_Upgrade_Icons": "images/nodes/Imperial/Infantry/RA3_Upgrade_Icons.png",
         },
         "Production": {
             "RA3 Empire Construction Yard Icons": "images/nodes/Imperial/Production/RA3 Empire Construction Yard Icons.png",
