@@ -27,21 +27,25 @@ class RA3Chunk(chunks.Chunk):
     # Decode decodable commands
     def decode_cmd(self, cmd):
         # hide some distracting commands
-        if cmd.cmd_id == 0x21:
-            cmd.cmd_ty = chunks.Command.HIDDEN  # lets forbid this from showing.
-
-        if cmd.cmd_id == 0x09:
-            cmd.decode_placedown_cmd(UNITNAMES, UNITCOST, FREEUNITS)
+        if cmd.cmd_id == 0x00:
+            cmd.decode_ra3_deploy_cmd()
+        elif cmd.cmd_id == 0x01:
+            # sometimes, GG
+            cmd.decode_skill_target(POWERNAMES, POWERCOST)
+        elif cmd.cmd_id == 0x03:
+            cmd.decode_upgrade_cmd(UPGRADENAMES, UPGRADECOST)
         elif cmd.cmd_id == 0x05:
             cmd.decode_ra3_queue_cmd(UNITNAMES, AFLD_UNITS, UNITCOST)
         elif cmd.cmd_id == 0x06:
             cmd.decode_ra3_hold_cmd(UNITNAMES)
-        elif cmd.cmd_id == 0x00:
-            cmd.decode_ra3_deploy_cmd()
-        elif cmd.cmd_id == 0x14:
-            cmd.decode_move_cmd()
+        elif cmd.cmd_id == 0x07:
+            cmd.decode_startbuild_cmd(UNITNAMES, UNITCOST, FREEUNITS)
+        elif cmd.cmd_id == 0x09:
+            cmd.decode_placedown_cmd(UNITNAMES, UNITCOST, FREEUNITS)
         elif cmd.cmd_id == 0x0A:
             cmd.decode_sell_cmd()
+        elif cmd.cmd_id == 0x14:
+            cmd.decode_move_cmd()
         elif cmd.cmd_id == 0x2c:
             cmd.decode_formation_move_cmd()
         elif cmd.cmd_id == 0x36:
@@ -50,11 +54,9 @@ class RA3Chunk(chunks.Chunk):
             cmd.decode_science_sel_cmd(SCIENCENAMES)
         elif cmd.cmd_id == 0xFF:
             cmd.decode_skill_xy(POWERNAMES, POWERCOST)
-        elif cmd.cmd_id == 0x01:
-            # sometimes, GG
-            cmd.decode_skill_target(POWERNAMES, POWERCOST)
-        elif cmd.cmd_id == 0x03:
-            cmd.decode_upgrade_cmd(UPGRADENAMES, UPGRADECOST)
+        elif cmd.cmd_id == 0x21:
+            cmd.decode_cmd("HIDDEN")  # lets forbid this from showing.
+
         elif cmd.cmd_id == 0xFE:
             cmd.decode_skill_targetless(POWERNAMES, POWERCOST)
         elif cmd.cmd_id == 0x32:

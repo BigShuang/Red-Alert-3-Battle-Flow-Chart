@@ -10,90 +10,67 @@ I made some changes here to adapt to my project
 """
 
 
-import struct # bin file enc/dec
-import sys
-import re
 import io
-import codecs
-import datetime
-import time
 from kwreplay import KWReplay
 from utils import *
 
+# Command type consts
+COMMANDTYPE = {
+    0: "NONE",
+    1: "HOLD",
+    2: "SELL",
+    3: "GG",
+    4: "POWERDOWN",
+    5: "QUEUE",  # queue unit production
+    6: "SKILL_2XY",
+    7: "SKILL_XY",
+    8: "SKILL_TARGETLESS",
+    9: "SKILL_TARGET",
+    10: "UPGRADE",
+    11: "PLACEDOWN",
+    12: "EOG",  # end of game marker
+    13: "FORMATION_MOVE",
+    14: "MOVE",
+    15: "REVERSE_MOVE",
+    16: "HIDDEN",  # hide from dump. (for debug)
+    17: "SCIENCE",  # general skill
+    18: "WIN",  # end of game marker
+    19: "LOSE",  # end of game marker
+    20: "STARTBUILD"
+}
+TYPE2COMMAND = {v: k for k, v in COMMANDTYPE.items()}
+COMMANDSTR = {
+    "SELL": "Sell",
+    "POWERDOWN": "Power down building",
+    "EOG": "End of game",
+}
 
-class Command:
+
+class Command(object):
     verbose = False     # manually make this True if you want to debug...
 
-    # Command type consts
-    NONE = 0
-    HOLD = 1
-    SELL = 2
-    GG = 3
-    POWERDOWN = 4
-    QUEUE = 5  # queue unit production
-    SKILL_2XY = 6
-    SKILL_XY = 7
-    SKILL_TARGETLESS = 8
-    SKILL_TARGET = 9
-    UPGRADE = 10
-    PLACEDOWN = 11
-    EOG = 12  # end of game marker
-    FORMATION_MOVE = 13
-    MOVE = 14
-    REVERSE_MOVE = 15
-    HIDDEN = 16  # hide from dump. (for debug)
-    SCIENCE = 17  # general skill
-    WIN = 18  # end of game marker
-    LOSE = 19  # end of game marker
+    def __init__(self):
+        self.cmd_id = 0
+        self.time_code = 0
+        self.player_id = 0  # dunno if it really is player_id.
+        self.payload = None  # raw command
 
-    def is_gg(self):
-        return self.cmd_ty == Command.GG
+        self.cmd_ty = 0  # not decoded at all! Decoded command type.
+        # other info are dynamically allocated when necessary.
+        # self.substructures = []
 
-    def is_eog(self):
-        return self.cmd_ty == Command.EOG
-
-    def is_win(self):
-        return self.cmd_ty == Command.WIN
-
-    def is_lose(self):
-        return self.cmd_ty == Command.LOSE
+    def get_type(self):
+        return COMMANDTYPE.get(self.cmd_ty, "")
 
     def show_in_timeline(self):
-        if self.cmd_ty == Command.NONE:
-            return False
-        if self.cmd_ty == Command.FORMATION_MOVE:
-            return False
-        if self.cmd_ty == Command.REVERSE_MOVE:
-            return False
-        if self.cmd_ty == Command.MOVE:
-            return False
-        if self.cmd_ty == Command.HIDDEN:
+        cmd_type = self.get_type()
+        if cmd_type in ["None", "FORMATION_MOVE", "REVERSE_MOVE", "MOVE", "HIDDEN"]:
             return False
         return True
 
     def is_skill_use(self):
-        return Command.SKILL_2XY <= self.cmd_ty and self.cmd_ty <= Command.SKILL_TARGET
-
-    def is_placedown(self):
-        return self.cmd_ty == Command.PLACEDOWN
-
-    def is_upgrade(self):
-        return self.cmd_ty == Command.UPGRADE
-
-    def is_queue(self):
-        return self.cmd_ty == Command.QUEUE
-
-    def is_hold(self):
-        return self.cmd_ty == Command.HOLD
-
-    def is_powerdown(self):
-        return self.cmd_ty == Command.POWERDOWN
-
-    def is_sell(self):
-        return self.cmd_ty == Command.SELL
-
-    def is_science(self):
-        return self.cmd_ty == Command.SCIENCE
+        cmd_type = self.get_type()
+        return cmd_type.startswith("SKILL")
 
     def has_1pos(self):
         return hasattr(self, "x")
@@ -104,23 +81,16 @@ class Command:
     def has_pos(self):
         return self.has_1pos() or self.has_2pos()
 
-    def __init__(self):
-        self.cmd_id = 0
-        self.time_code = 0
-        self.player_id = 0  # dunno if it really is player_id.
-        self.payload = None  # raw command
-
-        self.cmd_ty = Command.NONE  # not decoded at all! Decoded command type.
-        # other info are dynamically allocated when necessary.
-        # self.substructures = []
-
     def decode_sell_cmd(self):
-        self.cmd_ty = Command.SELL
+        self.cmd_ty = TYPE2COMMAND["SELL"]
         self.target = uint42int(self.payload[1:5])
+
+    def decode_cmd(self, cmd_type):
+        self.cmd_ty = TYPE2COMMAND[cmd_type]
 
     # Science? Why? Because it was called science in C&C Generals modding.
     def decode_science_sel_cmd(self, SCIENCENAMES):
-        self.cmd_ty = Command.SCIENCE
+        self.cmd_ty = TYPE2COMMAND["SCIENCE"]
         self.science = uint42int(self.payload[1:5])
 
         if self.science in SCIENCENAMES:
@@ -130,10 +100,10 @@ class Command:
 
     def decode_powerdown_cmd(self):
         self.decode_sell_cmd()  # this works for powerdown, too.
-        self.cmd_ty = Command.POWERDOWN
+        self.cmd_ty = TYPE2COMMAND["POWERDOWN"]
 
     def decode_ra3_deploy_cmd(self):
-        self.cmd_ty = Command.SKILL_TARGET
+        self.cmd_ty = TYPE2COMMAND["SKILL_TARGET"]
         data = self.payload
         self.x = uint42float(data[6:10])
         self.y = uint42float(data[10:14])
@@ -142,7 +112,7 @@ class Command:
         self.power = "Deploy Core/MCV"
 
     def decode_ra3_queue_cmd(self, UNITNAMES, AFLD_UNITS, UNITCOST):
-        self.cmd_ty = Command.QUEUE
+        self.cmd_ty = TYPE2COMMAND["QUEUE"]
         data = self.payload
 
         self.factory = uint42int(data[1:5])  # probably, but not too sure.
@@ -170,20 +140,20 @@ class Command:
             self.unit_ty = "Unit 0x%08X" % self.unit_ty
 
     def decode_queue_cmd(self, UNITNAMES, AFLD_UNITS, UNITCOST):
-        self.cmd_ty = Command.QUEUE
+        self.cmd_ty = TYPE2COMMAND["QUEUE"]
         data = self.payload
 
         if (not data) or (len(data) <= 2): # Just "" for net payload (Only FF in payload)
             # end of game marker?
             #self.cmd_ty = Command.LOSE incorrect:(
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
         elif data[1] == 0x02:
             #self.cmd_ty = Command.WIN incorrect:(
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
         elif len(data) <= 18:
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
         else:
             self.factory = uint42int(data[1:5])
@@ -212,14 +182,14 @@ class Command:
 
     def decode_gg(self):
         if self.payload[0] == 0xFF:
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
         else:
-            self.cmd_ty = Command.GG
+            self.cmd_ty = TYPE2COMMAND["GG"]
             self.target = self.payload[1]
 
     def decode_skill_xy(self, POWERNAMES, POWERCOST):
-        self.cmd_ty = Command.SKILL_XY
+        self.cmd_ty = TYPE2COMMAND["SKILL_XY"]
         data = self.payload
         self.power = uint42int(data[0:4])
         self.x = uint42float(data[6:10])
@@ -237,7 +207,7 @@ class Command:
 
 
     def decode_skill_2xy(self, POWERNAMES, POWERCOST):
-        self.cmd_ty = Command.SKILL_2XY
+        self.cmd_ty = TYPE2COMMAND["SKILL_2XY"]
         data = self.payload
         self.x1 = uint42float(data[16:20])
         self.y1 = uint42float(data[20:24])
@@ -257,7 +227,7 @@ class Command:
 
 
     def decode_skill_targetless(self, POWERNAMES, POWERCOST):
-        self.cmd_ty = Command.SKILL_TARGETLESS
+        self.cmd_ty = TYPE2COMMAND["SKILL_TARGETLESS"]
         data = self.payload
         self.power = uint42int(data[0:4])
 
@@ -278,17 +248,17 @@ class Command:
         data = self.payload
         if len(data) < 5:
             # GG?
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             return
 
-        self.cmd_ty = Command.SKILL_TARGET
+        self.cmd_ty = TYPE2COMMAND["SKILL_TARGET"]
         self.power = uint42int(data[0:4])
         # dunno about target, but it is certain that this is only used on walling
         # structures -_-
 
         # Sometimes, GG in RA3.
         if self.power == 0x00:
-            self.cmd_ty = Command.EOG
+            self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
             return
 
@@ -301,10 +271,8 @@ class Command:
         else:
             self.power = "Skill 0x%08X" % self.power
 
-
-
     def decode_upgrade_cmd(self, UPGRADENAMES, UPGRADECOST):
-        self.cmd_ty = Command.UPGRADE
+        self.cmd_ty = TYPE2COMMAND["UPGRADE"]
         data = self.payload
         self.upgrade = uint42int(data[1:5])
 
@@ -318,9 +286,8 @@ class Command:
             self.upgrade = "Upgrade 0x%08X" % self.upgrade
 
 
-
     def decode_hold_cmd(self, UNITNAMES):
-        self.cmd_ty = Command.HOLD
+        self.cmd_ty = TYPE2COMMAND["HOLD"]
         data = self.payload
         self.factory = uint42int(data[1:5])
         self.unit_ty = uint42int(data[8:12])
@@ -332,7 +299,7 @@ class Command:
             self.unit_ty = "Unit 0x%08X" % self.unit_ty
 
     def decode_ra3_hold_cmd(self, UNITNAMES):
-        self.cmd_ty = Command.HOLD
+        self.cmd_ty = TYPE2COMMAND["HOLD"]
         data = self.payload
         self.factory = uint42int(data[1:5])
         self.unit_ty = uint42int(data[6:10])
@@ -345,13 +312,13 @@ class Command:
 
     def decode_formation_move_cmd(self):
         self.decode_move_cmd() # seems to work, though there are more parameters.
-        self.cmd_ty = Command.FORMATION_MOVE
+        self.cmd_ty = TYPE2COMMAND["FORMATION_MOVE"]
         #data = self.payload
         #self.x = uint42float(data[1:5])
         #self.y = uint42float(data[5:9])
 
     def decode_move_cmd(self):
-        self.cmd_ty = Command.MOVE
+        self.cmd_ty = TYPE2COMMAND["MOVE"]
         data = self.payload
         self.x = uint42float(data[1:5])
         self.y = uint42float(data[5:9])
@@ -359,10 +326,10 @@ class Command:
 
     def decode_reverse_move_cmd(self):
         self.decode_move_cmd()  # this will do
-        self.cmd_ty = Command.REVERSE_MOVE
+        self.cmd_ty = TYPE2COMMAND["REVERSE_MOVE"]
 
     def decode_placedown_cmd(self, UNITNAMES, UNITCOST, FREEUNITS):
-        self.cmd_ty = Command.PLACEDOWN
+        self.cmd_ty = TYPE2COMMAND["PLACEDOWN"]
         data = self.payload
         self.building_type = uint42int(data[6:10])
         self.substructure_cnt = data[10]
@@ -389,8 +356,6 @@ class Command:
             self.building_type = UNITNAMES[self.building_type]
         else:
             self.building_type = "Bldg 0x%08X" % self.building_type
-
-
 
         #print("\tLocation: %f, %f" % (x, y))
         #print("substructure_cnt:", substructure_cnt)
@@ -410,7 +375,7 @@ class Command:
         # or... z coord?! dunno?!
 
     def decode_startbuild_cmd(self, UNITNAMES, UNITCOST, FREEUNITS):
-        self.cmd_ty = Command.PLACEDOWN
+        self.cmd_ty = TYPE2COMMAND["STARTBUILD"]
         data = self.payload
         self.building_type = uint42int(data[6:10])
         self.substructure_cnt = data[10]
@@ -418,13 +383,9 @@ class Command:
         self.free_unit = None  # harvesters.
 
         # substructure X and Y decoding.
-        pos = 11
-        for i in range(self.substructure_cnt):
-            pos += 4
-            self.x = uint42float(data[pos:pos+4])
-            pos += 4
-            self.y = uint42float(data[pos:pos+4])
-            pos += 4
+        # pos = 11
+        # if self.substructure_cnt:
+        #     print(self.substructure_cnt)
 
         self.cost = None
         if self.building_type in UNITCOST:
@@ -439,45 +400,37 @@ class Command:
             self.building_type = "Bldg 0x%08X" % self.building_type
 
     def print_bo(self):
+        print(self.time_code, end="\t")
         time = time_code2str(self.time_code/15)
         print(time, end="\t")
         print("P" + str(self.player_id), end="\t")
         print(self)
 
-
-
     # Return build order commands as str.
     def __str__(self):
-        if self.cmd_ty == Command.NONE:
+        cmd_type = self.get_type()
+        if cmd_type in ["", "NONE"]:
             return "Unknown Command"
-        elif self.is_hold():
+        elif cmd_type == "HOLD":
             return "Hold/Cancel " + self.unit_ty
-        elif self.is_sell():
-            return "Sell"
-        elif self.is_science():
+        elif cmd_type == "SCIENCE":
             return "Select " + self.science
-        elif self.is_gg():
+        elif cmd_type == "GG":
             return "GG " + str(self.target)
-        elif self.is_powerdown():
-            return "Power down building"
-        elif self.is_queue():
+        elif cmd_type == "QUEUE":
             return "Queue " + str(self.cnt) + "x " + self.unit_ty
         elif self.is_skill_use():
             return self.power
-        elif self.is_upgrade():
+        elif cmd_type == "UPGRADE":
             return self.upgrade
-        elif self.is_placedown():
-            return self.building_type
-        elif self.is_eog():
-            return "End of game"
-        elif self.is_win():
-            return "Win"
-        elif self.is_lose():
-            return "Lose"
+        elif cmd_type == "PLACEDOWN":
+            return "Place down " + self.building_type
+        elif cmd_type == "STARTBUILD":
+            return "Start build " + self.building_type
+        elif cmd_type in COMMANDSTR:
+            return COMMANDSTR[cmd_type]
         else:
-            return "Unknown Command"
-
-
+            return cmd_type
 
 
 class Splitter:
@@ -490,8 +443,6 @@ class Splitter:
             print("fixed len. payload:")
             print_bytes(cmd.payload)
             print()
-
-
 
     def split_placedown_cmd(cmd, f):
         payload = io.BytesIO()
@@ -657,7 +608,7 @@ class Splitter:
             print()
 
 
-class Chunk:
+class Chunk(object):
     def __init__(self):
         self.time_code = 0
         self.ty = 0
@@ -676,7 +627,6 @@ class Chunk:
         self.player_number = 0
         self.time_code_payload = 0 # another timecode, in the payload.
         self.ty2_payload = None
-
 
 
     def split(self, game):
@@ -704,15 +654,11 @@ class Chunk:
             for cmd in self.commands:
                 cmd.time_code = self.time_code
     
-
-
     def fix_mismatch(self):
         # Override this one.
         # If you can't fix, make sure you can print out this warning.
         print("Warning: chunk/command count mismatch!", file=sys.stderr)
         self.commands = [] # just remove commands so that analyzer/timeline can't see this.
-
-
 
     # Just try splitting commands by "FF".
     def split_commands(self, ncmd, payload, game):
@@ -720,7 +666,6 @@ class Chunk:
         CMD_ID = 0
         PID = 1
         CONTENT = 2
-
 
         c = None # command of interest
         mode = CMD_ID
@@ -760,25 +705,18 @@ class Chunk:
                 assert 0, "Shouldn't see me! split_commands() of ChunkOtherGames"
     
 
-
     def is_bo_cmd(self, cmd):
         return False
-
-
 
     def is_known_cmd(self, cmd):
         # not build order cmd... But I know what this is!
         # e.g, scroll.
         return False
 
-
-
     def resolve_known(self, cmd):
         # Override this one.
         # Returns the description of the known function as str.
         return ""
-
-
 
     def has_bo_cmd(self):
         for cmd in self.commands:
@@ -786,13 +724,9 @@ class Chunk:
                 return True
         return False
 
-
-
     def decode_cmd(self, cmd):
         # You need to override this function.
         pass
-
-
 
     def print_bo(self):
         if self.ty == 1:
@@ -818,8 +752,6 @@ class Chunk:
         #    self.player_number = read_uint32(f) # uint32
         #    self.time_code_payload = read_uint32(f) # time code...
         #    self.ty2_payload = f.read() # the payload
-    
-
 
     def dump_commands(self):
         # print("Time\tPlayer\tcmd_id\tparams")
@@ -834,10 +766,11 @@ class Chunk:
         else:
             for cmd in self.commands:
                 self.decode_cmd(cmd)
-                if cmd.cmd_ty == Command.HIDDEN:
+                if cmd.get_type() == "HIDDEN":
                     # just hide this command.
                     continue
                 elif self.is_bo_cmd(cmd):
+                    # the command known
                     self.decode_cmd(cmd)
                     cmd.print_bo()
                 elif self.is_known_cmd(cmd):
@@ -847,151 +780,3 @@ class Chunk:
                 print("0x%02X" % cmd.cmd_id, end="\t")
                 print_bytes(cmd.payload, break16=False)
                 print()
-    
-
-
-class ReplayBody:
-    def __init__(self, f, game="KW"):
-        self.chunks = []
-        self.game = game
-        self.loadFromStream(f)
-    
-    def read_chunk(self, f):
-        if self.game == "KW":
-            import kwchunks
-            chunk = kwchunks.KWChunk()
-        elif self.game == "CNC3":
-            import twchunks
-            chunk = twchunks.TWChunk()
-        elif self.game == "RA3":
-            import ra3chunks
-            chunk = ra3chunks.RA3Chunk()
-        else:
-            assert 0, "What game is this?"
-        chunk.time_code = read_uint32(f)
-        if chunk.time_code == 0x7FFFFFFF:
-            return None
-
-        chunk.ty = read_byte(f)
-        chunk.size = read_uint32(f)
-        chunk.data = f.read(chunk.size)
-        unknown = read_uint32(f) # mostly 0, but not always.
-
-        # chunk debugging stuff:
-        #print("chunk pos: 0x%08X" % f.tell())
-        #print("read_chunk.time_code: 0x%08X" % chunk.time_code)
-        #print("read_chunk.ty: 0x%02X" % chunk.ty)
-        #print("read_chunk.size:", chunk.size)
-        #print("chunk.data:")
-        #print_bytes(chunk.data)
-        #print()
-    
-        chunk.split(self.game)
-        return chunk
-    
-    def loadFromStream(self, f):
-        while True:
-            chunk = self.read_chunk(f)
-            if chunk == None:
-                break
-            self.chunks.append(chunk)
-    
-    def print_bo(self):
-        print("Dump of known build order related commands")
-        print("Time\tPlayer\tAction")
-        for chunk in self.chunks:
-            chunk.print_bo()
-    
-    def dump_commands(self):
-        print("Dump of commands")
-        print("Time\tPlayer\tcmd_id\tparams")
-        for chunk in self.chunks:
-            chunk.dump_commands()
-
-
-
-class KWReplayWithCommands(KWReplay):
-    def __init__(self, fname=None, verbose=False):
-        self.replay_body = None
-
-        # self.footer_str ... useless
-        self.final_time_code = 0
-        self.footer_data = None # I have no idea what this is. I'll keep it as it is.
-        #self.footer_length = 0
-
-        super().__init__(fname=fname, verbose=verbose)
-
-    def read_footer(self, f):
-        footer_str = read_cstr(f, self.FOOTER_MAGIC_SIZE)
-        self.final_time_code = read_uint32(f)
-        self.footer_data = f.read()
-        if self.verbose:
-            print("footer_str:", footer_str)
-            print("final_time_code:", self.final_time_code)
-            print("footer_data:", self.footer_data)
-            print()
-
-
-
-    # Sometimes, we get invalid player_id in some commands for unknown reason.
-    # See cornercases/big_player_id for example.
-    # Why do I do this? cos I work with pid as array indexes a lot.
-    def fix_pid(self):
-        discarded = 0
-        for chunk in self.replay_body.chunks:
-
-            # keep valid commands
-            commands = []
-            for cmd in chunk.commands:
-                # invalid player id!
-                if cmd.player_id < len(self.players):
-                    commands.append(cmd)
-
-            if len(commands) != len(chunk.commands):
-                discarded += len(chunk.commands) - len(commands)
-                chunk.commands = commands
-
-        print(discarded, "commands with invalid player discarded")
-
-
-
-    def loadFromFile(self, fname):
-        self.guess_game(fname)
-        f = open(fname, 'rb')
-        self.loadFromStream(f)
-        self.replay_body = ReplayBody(f, game=self.game)
-        self.read_footer(f)
-        f.close()
-
-
-
-###
-###
-###
-def main():
-    fname = "1.KWReplay"
-    if len(sys.argv) >= 2:
-        fname = sys.argv[1]
-    kw = KWReplayWithCommands(fname=fname, verbose=False)
-    print(fname)
-    print()
-    kw.replay_body.print_bo()
-    print()
-    kw.replay_body.dump_commands()
-
-
-def main_2(fname):
-
-    kw = KWReplayWithCommands(fname=fname, verbose=False)
-    print(fname)
-    print()
-    kw.replay_body.print_bo()
-    print()
-    kw.replay_body.dump_commands()
-
-if __name__ == "__main__":
-
-    fname = "../replays/盟军vs欧列格.RA3Replay"
-    main_2(fname)
-    # import os
-    # r = os.path.exists(fname)
