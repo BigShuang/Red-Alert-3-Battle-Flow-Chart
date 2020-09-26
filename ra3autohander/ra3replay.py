@@ -21,6 +21,7 @@ class ReplayBody:
         self.chunks = []
         self.game = game
         self.loadFromStream(f)
+
     
     def read_chunk(self, f):
 
@@ -33,8 +34,8 @@ class ReplayBody:
         chunk.ty = read_byte(f)
         chunk.size = read_uint32(f)
         chunk.data = f.read(chunk.size)
-        unknown = read_uint32(f) # mostly 0, but not always.
-
+        # unknown = read_uint32(f) # mostly 0, but not always.
+        chunk.unknown_data = f.read(4)
         # chunk debugging stuff:
         #print("chunk pos: 0x%08X" % f.tell())
         #print("read_chunk.time_code: 0x%08X" % chunk.time_code)

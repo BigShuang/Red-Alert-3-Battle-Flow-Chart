@@ -36,7 +36,13 @@ COMMANDTYPE = {
     17: "SCIENCE",  # general skill
     18: "WIN",  # end of game marker
     19: "LOSE",  # end of game marker
-    20: "STARTBUILD"
+    20: "STARTBUILD",
+    21: "SELECT",
+    22: "RIGHTCLICK",
+    23: "GenerateUnitId",
+    24: "RemoveUnitId",
+
+
 }
 TYPE2COMMAND = {v: k for k, v in COMMANDTYPE.items()}
 COMMANDSTR = {
@@ -58,6 +64,8 @@ class Command(object):
         self.cmd_ty = 0  # not decoded at all! Decoded command type.
         # other info are dynamically allocated when necessary.
         # self.substructures = []
+
+        self.info = {}  # to record some info from data
 
     def get_type(self):
         return COMMANDTYPE.get(self.cmd_ty, "")
@@ -98,6 +106,36 @@ class Command(object):
         else:
             self.science = "Science 0x%08X" % self.science
 
+    def decode_select_cmd(self):
+        self.cmd_ty = TYPE2COMMAND["SELECT"]
+        try:
+            self.info["unit_id"] = uint42int(self.payload[4:8])
+        except Exception:
+            print("select_cmd_error:", self.payload)
+
+    def decode_generateunitid_cmd(self):
+        self.cmd_ty = TYPE2COMMAND["GenerateUnitId"]
+        data = self.payload
+        unit_count = (len(data) - 5) // 4
+        start_pos = 4
+        self.info["generate_uids"] = []
+        for ci in range(unit_count):
+            unit_id = uint42int(self.payload[start_pos:start_pos + 4])
+            self.info["generate_uids"].append(unit_id)
+            start_pos += 4
+
+    def decode_removeunitid_cmd(self):
+        self.cmd_ty = TYPE2COMMAND["RemoveUnitId"]
+        data = self.payload
+        unit_count = (len(data) - 2) // 4
+        start_pos = 1
+        self.info["remove_uids"] = []
+        for ci in range(unit_count):
+            unit_id = uint42int(self.payload[start_pos:start_pos + 4])
+            self.info["remove_uids"].append(unit_id)
+            start_pos += 4
+
+
     def decode_powerdown_cmd(self):
         self.decode_sell_cmd()  # this works for powerdown, too.
         self.cmd_ty = TYPE2COMMAND["POWERDOWN"]
@@ -109,76 +147,36 @@ class Command(object):
         self.y = uint42float(data[10:14])
         self.orientation = uint42float(data[19:23])
         self.cost = 0
-        self.power = "Deploy Core/MCV"
+        self.info["unit_id"] = uint42int(data[-5:-1])
+        self.info["power"] = "Deploy Core/MCV"
 
     def decode_ra3_queue_cmd(self, UNITNAMES, AFLD_UNITS, UNITCOST):
         self.cmd_ty = TYPE2COMMAND["QUEUE"]
         data = self.payload
 
-        self.factory = uint42int(data[1:5])  # probably, but not too sure.
-        self.unit_ty = uint42int(data[6:10])
-        self.cnt = 1  # how many queued?
+        self.info["factory"] = uint42int(data[1:5])  # probably, but not too sure.
+        self.info["unit_ty"] = uint42int(data[6:10])
+        self.info["cnt"] = 1  # how many queued?
         fivex = data[11]
         if fivex:
-            if self.unit_ty in AFLD_UNITS:
-                self.cnt = 4
+            if self.info["unit_ty"] in AFLD_UNITS:
+                self.info["cnt"] = 4
                 # Actually, fivex just tells us that it is
                 # shift + click on the unit produciton button.
                 # For normal units, it is definitely 5x.
                 # But for these air units, it could be
                 # 1 ~ 4, depending on the space left on the landing pad.
             else:
-                self.cnt = 5
+                self.info["cnt"] = 5
 
-        self.cost = None # not zero but none, intended. units must have some info:D
-        if self.unit_ty in UNITCOST:
-            self.cost = UNITCOST[self.unit_ty]
+        self.info["cost"] = None # not zero but none, intended. units must have some info:D
+        if self.info["unit_ty"] in UNITCOST:
+            self.info["cost"] = UNITCOST[self.info["unit_ty"]]
 
-        if self.unit_ty in UNITNAMES:
-            self.unit_ty = UNITNAMES[self.unit_ty]
+        if self.info["unit_ty"] in UNITNAMES:
+            self.info["unit_ty"] = UNITNAMES[self.info["unit_ty"]]
         else:
-            self.unit_ty = "Unit 0x%08X" % self.unit_ty
-
-    def decode_queue_cmd(self, UNITNAMES, AFLD_UNITS, UNITCOST):
-        self.cmd_ty = TYPE2COMMAND["QUEUE"]
-        data = self.payload
-
-        if (not data) or (len(data) <= 2): # Just "" for net payload (Only FF in payload)
-            # end of game marker?
-            #self.cmd_ty = Command.LOSE incorrect:(
-            self.cmd_ty = TYPE2COMMAND["EOG"]
-            self.target = self.player_id
-        elif data[1] == 0x02:
-            #self.cmd_ty = Command.WIN incorrect:(
-            self.cmd_ty = TYPE2COMMAND["EOG"]
-            self.target = self.player_id
-        elif len(data) <= 18:
-            self.cmd_ty = TYPE2COMMAND["EOG"]
-            self.target = self.player_id
-        else:
-            self.factory = uint42int(data[1:5])
-            self.unit_ty = uint42int(data[8:12]) # This one is pretty sure
-            self.cnt = 1 # how many queued?
-            fivex = data[17]
-            if fivex:
-                if self.unit_ty in AFLD_UNITS:
-                    self.cnt = 4
-                    # Actually, fivex just tells us that it is
-                    # shift + click on the unit produciton button.
-                    # For normal units, it is definitely 5x.
-                    # But for these air units, it could be
-                    # 1 ~ 4, depending on the space left on the landing pad.
-                else:
-                    self.cnt = 5
-
-            self.cost = None
-            if self.unit_ty in UNITCOST:
-                self.cost = UNITCOST[self.unit_ty]
-
-            if self.unit_ty in UNITNAMES:
-                self.unit_ty = UNITNAMES[self.unit_ty]
-            else:
-                self.unit_ty = "Unit 0x%08X" % self.unit_ty
+            self.info["unit_ty"] = "Unit 0x%08X" % self.info["unit_ty"]
 
     def decode_gg(self):
         if self.payload[0] == 0xFF:
@@ -191,20 +189,18 @@ class Command(object):
     def decode_skill_xy(self, POWERNAMES, POWERCOST):
         self.cmd_ty = TYPE2COMMAND["SKILL_XY"]
         data = self.payload
-        self.power = uint42int(data[0:4])
+        self.info["power"] = uint42int(data[0:4])
         self.x = uint42float(data[6:10])
         self.y = uint42float(data[10:14])
 
         self.cost = 0 # by default, 0.
-        if self.power in POWERCOST:
-            self.cost = POWERCOST[self.power]
+        if self.info["power"] in POWERCOST:
+            self.cost = POWERCOST[self.info["power"]]
 
-        if self.power in POWERNAMES:
-            self.power = POWERNAMES[self.power]
+        if self.info["power"] in POWERNAMES:
+            self.info["power"] = POWERNAMES[self.info["power"]]
         else:
-            self.power = "Skill 0x%08X" % self.power
-
-
+            self.info["power"] = "Skill 0x%08X" % self.info["power"]
 
     def decode_skill_2xy(self, POWERNAMES, POWERCOST):
         self.cmd_ty = TYPE2COMMAND["SKILL_2XY"]
@@ -213,34 +209,32 @@ class Command(object):
         self.y1 = uint42float(data[20:24])
         self.x2 = uint42float(data[28:32])
         self.y2 = uint42float(data[32:36])
-        self.power = uint42int(data[0:4])
+        self.info["power"] = uint42int(data[0:4])
 
         self.cost = 0 # by default, 0.
-        if self.power in POWERCOST:
-            self.cost = POWERCOST[self.power]
+        if self.info["power"] in POWERCOST:
+            self.cost = POWERCOST[self.info["power"]]
 
-        if self.power in POWERNAMES:
-            self.power = POWERNAMES[self.power]
+        if self.info["power"] in POWERNAMES:
+            self.info["power"] = POWERNAMES[self.info["power"]]
         else:
-            self.power = "Skill 0x%08X" % self.power
-
-
+            self.info["power"] = "Skill 0x%08X" % self.info["power"]
 
     def decode_skill_targetless(self, POWERNAMES, POWERCOST):
         self.cmd_ty = TYPE2COMMAND["SKILL_TARGETLESS"]
         data = self.payload
-        self.power = uint42int(data[0:4])
+        self.info["power"] = uint42int(data[0:4])
+        if len(data) == 23:
+            self.info["unit_id"] = uint42int(data[14:18])
 
-        self.cost = 0 # by default, 0.
-        if self.power in POWERCOST:
-            self.cost = POWERCOST[self.power]
+        self.info["cost"] = 0  # by default, 0.
+        if self.info["power"] in POWERCOST:
+            self.info["cost"] = POWERCOST[self.info["power"]]
 
-        if self.power in POWERNAMES:
-            self.power = POWERNAMES[self.power]
+        if self.info["power"] in POWERNAMES:
+            self.info["power"] = POWERNAMES[self.info["power"]]
         else:
-            self.power = "Skill 0x%08X" % self.power
-
-
+            self.info["power"] = "Skill 0x%08X" % self.info["power"]
 
     # with a target unit.
     # eg, laser fence, toxic corrosion.
@@ -252,24 +246,24 @@ class Command(object):
             return
 
         self.cmd_ty = TYPE2COMMAND["SKILL_TARGET"]
-        self.power = uint42int(data[0:4])
+        self.info["power"] = uint42int(data[0:4])
         # dunno about target, but it is certain that this is only used on walling
         # structures -_-
 
         # Sometimes, GG in RA3.
-        if self.power == 0x00:
+        if self.info["power"] == 0x00:
             self.cmd_ty = TYPE2COMMAND["EOG"]
             self.target = self.player_id
             return
 
         self.cost = 0 # by default, 0.
-        if self.power in POWERCOST:
-            self.cost = POWERCOST[self.power]
+        if self.info["power"] in POWERCOST:
+            self.cost = POWERCOST[self.info["power"]]
 
-        if self.power in POWERNAMES:
-            self.power = POWERNAMES[self.power]
+        if self.info["power"] in POWERNAMES:
+            self.info["power"] = POWERNAMES[self.info["power"]]
         else:
-            self.power = "Skill 0x%08X" % self.power
+            self.info["power"] = "Skill 0x%08X" % self.info["power"]
 
     def decode_upgrade_cmd(self, UPGRADENAMES, UPGRADECOST):
         self.cmd_ty = TYPE2COMMAND["UPGRADE"]
@@ -289,26 +283,26 @@ class Command(object):
     def decode_hold_cmd(self, UNITNAMES):
         self.cmd_ty = TYPE2COMMAND["HOLD"]
         data = self.payload
-        self.factory = uint42int(data[1:5])
-        self.unit_ty = uint42int(data[8:12])
-        self.cancel_all = data[13] # remove all build queue of this type
+        self.info["factory"] = uint42int(data[1:5])
+        self.info["unit_ty"] = uint42int(data[8:12])
+        self.info["cancel_all"] = data[13] # remove all build queue of this type
 
-        if self.unit_ty in UNITNAMES:
-            self.unit_ty = UNITNAMES[self.unit_ty]
+        if self.info["unit_ty"] in UNITNAMES:
+            self.info["unit_ty"] = UNITNAMES[self.info["unit_ty"]]
         else:
-            self.unit_ty = "Unit 0x%08X" % self.unit_ty
+            self.info["unit_ty"] = "Unit 0x%08X" % self.info["unit_ty"]
 
     def decode_ra3_hold_cmd(self, UNITNAMES):
         self.cmd_ty = TYPE2COMMAND["HOLD"]
         data = self.payload
-        self.factory = uint42int(data[1:5])
-        self.unit_ty = uint42int(data[6:10])
-        self.cancel_all = data[11] # remove all build queue of this type
+        self.info["factory"] = uint42int(data[1:5])
+        self.info["unit_ty"] = uint42int(data[6:10])
+        self.info["cancel_all"] = data[11]  # remove all build queue of this type
 
-        if self.unit_ty in UNITNAMES:
-            self.unit_ty = UNITNAMES[self.unit_ty]
+        if self.info["unit_ty"] in UNITNAMES:
+            self.info["unit_ty"] = UNITNAMES[self.info["unit_ty"]]
         else:
-            self.unit_ty = "Unit 0x%08X" % self.unit_ty
+            self.info["unit_ty"] = "Unit 0x%08X" % self.info["unit_ty"]
 
     def decode_formation_move_cmd(self):
         self.decode_move_cmd() # seems to work, though there are more parameters.
@@ -331,34 +325,31 @@ class Command(object):
     def decode_placedown_cmd(self, UNITNAMES, UNITCOST, FREEUNITS):
         self.cmd_ty = TYPE2COMMAND["PLACEDOWN"]
         data = self.payload
-        self.building_type = uint42int(data[6:10])
-        self.substructure_cnt = data[10]
-        self.substructures = []
-        self.free_unit = None  # harvesters.
+        self.info["parent"] = uint42int(data[1:5])
+        self.info["building_type"] = uint42int(data[6:10])
+        self.info["substructure_cnt"] = data[10]
+        self.info["substructures"] = []
+        self.info["free_unit"] = []
 
         # substructure X and Y decoding.
         pos = 11
-        for i in range(self.substructure_cnt):
+        for i in range(self.info["substructure_cnt"]):
             pos += 4
-            self.x = uint42float(data[pos:pos+4])
+            self.info["x"] = uint42float(data[pos:pos+4])
             pos += 4
-            self.y = uint42float(data[pos:pos+4])
+            self.info["y"] = uint42float(data[pos:pos+4])
             pos += 4
 
-        self.cost = None
-        if self.building_type in UNITCOST:
-            self.cost = UNITCOST[self.building_type]
+        if self.info["building_type"] in UNITCOST:
+            self.info["cost"] = UNITCOST[self.info["building_type"]]
 
-        if self.building_type in UNITNAMES:
-            if self.building_type in FREEUNITS:
-                self.free_unit = FREEUNITS[self.building_type]
-                self.free_unit = UNITNAMES[self.free_unit]
-            self.building_type = UNITNAMES[self.building_type]
+        if self.info["building_type"] in UNITNAMES:
+            if self.info["building_type"] in FREEUNITS:
+                self.info["free_unit"] = FREEUNITS[self.info["building_type"]]
+                self.info["free_unit"] = UNITNAMES[self.info["free_unit"]]
+            self.info["building_type"] = UNITNAMES[self.info["building_type"]]
         else:
-            self.building_type = "Bldg 0x%08X" % self.building_type
-
-        #print("\tLocation: %f, %f" % (x, y))
-        #print("substructure_cnt:", substructure_cnt)
+            self.info["building_type"] = "Bldg 0x%08X" % self.info["building_type"]
 
         # subcomponent ID, x, y, orientation
         # I don't know how 18 bytes are made of...
@@ -377,27 +368,47 @@ class Command(object):
     def decode_startbuild_cmd(self, UNITNAMES, UNITCOST, FREEUNITS):
         self.cmd_ty = TYPE2COMMAND["STARTBUILD"]
         data = self.payload
-        self.building_type = uint42int(data[6:10])
-        self.substructure_cnt = data[10]
-        self.substructures = []
-        self.free_unit = None  # harvesters.
+        self.info["parent"] = uint42int(data[1:5])
+        self.info["building_type"] = uint42int(data[6:10])
+        self.info["substructure_cnt"] = data[10]
+        self.info["substructures"] = []
+        self.info["free_unit"] = []
 
         # substructure X and Y decoding.
         # pos = 11
         # if self.substructure_cnt:
         #     print(self.substructure_cnt)
 
-        self.cost = None
-        if self.building_type in UNITCOST:
-            self.cost = UNITCOST[self.building_type]
+        if self.info["building_type"] in UNITCOST:
+            self.info["cost"] = UNITCOST[self.info["building_type"]]
 
-        if self.building_type in UNITNAMES:
-            if self.building_type in FREEUNITS:
-                self.free_unit = FREEUNITS[self.building_type]
-                self.free_unit = UNITNAMES[self.free_unit]
-            self.building_type = UNITNAMES[self.building_type]
+        if self.info["building_type"] in UNITNAMES:
+            if self.info["building_type"] in FREEUNITS:
+                self.info["free_unit"] = FREEUNITS[self.info["building_type"]]
+                self.info["free_unit"] = UNITNAMES[self.info["free_unit"]]
+            self.info["building_type"] = UNITNAMES[self.info["building_type"]]
         else:
-            self.building_type = "Bldg 0x%08X" % self.building_type
+            self.info["building_type"] = "Bldg 0x%08X" % self.info["building_type"]
+
+    def decode_rightclick_cmd(self, UNITNAMES, UNITCOST, FREEUNITS):
+        self.cmd_ty = TYPE2COMMAND["RIGHTCLICK"]
+        data = self.payload
+        self.info["parent"] = uint42int(data[1:5])
+        self.info["building_type"] = uint42int(data[10:14])
+        self.info["substructure_cnt"] = data[14]
+        self.info["substructures"] = []
+        self.info["free_unit"] = []
+
+        if self.info["building_type"] in UNITCOST:
+            self.info["cost"] = UNITCOST[self.info["building_type"]]
+
+        if self.info["building_type"] in UNITNAMES:
+            if self.info["building_type"] in FREEUNITS:
+                self.info["free_unit"] = FREEUNITS[self.info["building_type"]]
+                self.info["free_unit"] = UNITNAMES[self.info["free_unit"]]
+            self.info["building_type"] = UNITNAMES[self.info["building_type"]]
+        else:
+            self.info["building_type"] = "Bldg 0x%08X" % self.info["building_type"]
 
     def print_bo(self):
         print(self.time_code, end="\t")
@@ -412,21 +423,25 @@ class Command(object):
         if cmd_type in ["", "NONE"]:
             return "Unknown Command"
         elif cmd_type == "HOLD":
-            return "Hold/Cancel " + self.unit_ty
+            return "Hold/Cancel " + self.info["unit_ty"]
         elif cmd_type == "SCIENCE":
             return "Select " + self.science
         elif cmd_type == "GG":
             return "GG " + str(self.target)
         elif cmd_type == "QUEUE":
-            return "Queue " + str(self.cnt) + "x " + self.unit_ty
+            return "Queue " + str(self.info.get("cnt", 1)) + "x " + self.info.get("unit_ty", "")
         elif self.is_skill_use():
-            return self.power
+            return self.info["power"]
         elif cmd_type == "UPGRADE":
             return self.upgrade
         elif cmd_type == "PLACEDOWN":
-            return "Place down " + self.building_type
+            return "Place down " + self.info.get("building_type", "")
         elif cmd_type == "STARTBUILD":
-            return "Start build " + self.building_type
+            return "Start build " + self.info.get("building_type", "")
+        elif cmd_type == "RIGHTCLICK":
+            return "Right click on building " + self.info.get("building_type", "")
+        elif cmd_type == "SELECT":
+            return "Select unit %s" % self.info.get("unit_id", "")
         elif cmd_type in COMMANDSTR:
             return COMMANDSTR[cmd_type]
         else:
@@ -627,6 +642,7 @@ class Chunk(object):
         self.player_number = 0
         self.time_code_payload = 0 # another timecode, in the payload.
         self.ty2_payload = None
+        self.unknown_data = None
 
 
     def split(self, game):

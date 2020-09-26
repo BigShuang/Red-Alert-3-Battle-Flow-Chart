@@ -40,6 +40,8 @@ class RA3Chunk(chunks.Chunk):
             cmd.decode_ra3_hold_cmd(UNITNAMES)
         elif cmd.cmd_id == 0x07:
             cmd.decode_startbuild_cmd(UNITNAMES, UNITCOST, FREEUNITS)
+        elif cmd.cmd_id == 0x08:
+            cmd.decode_rightclick_cmd(UNITNAMES, UNITCOST, FREEUNITS)
         elif cmd.cmd_id == 0x09:
             cmd.decode_placedown_cmd(UNITNAMES, UNITCOST, FREEUNITS)
         elif cmd.cmd_id == 0x0A:
@@ -52,6 +54,12 @@ class RA3Chunk(chunks.Chunk):
             cmd.decode_reverse_move_cmd()
         elif cmd.cmd_id == 0x4E:
             cmd.decode_science_sel_cmd(SCIENCENAMES)
+        elif cmd.cmd_id == 0xF5:
+            cmd.decode_select_cmd()
+        elif cmd.cmd_id == 0xF6:  # generate a new unit id for a unit
+            cmd.decode_generateunitid_cmd()
+        elif cmd.cmd_id == 0xF9:  # remove a unit id for a unit
+            cmd.decode_removeunitid_cmd()
         elif cmd.cmd_id == 0xFF:
             cmd.decode_skill_xy(POWERNAMES, POWERCOST)
         elif cmd.cmd_id == 0x21:

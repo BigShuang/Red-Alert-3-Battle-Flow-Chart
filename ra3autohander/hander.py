@@ -2,13 +2,21 @@
 # -*- coding:utf-8- -*-
 from ra3replay import KWReplayWithCommands
 import os
+from flowchart import FlowChart
+
+
+
 
 
 def get_replaybody_json(filename, output = ""):
     replay = KWReplayWithCommands(fname=filename, verbose=False )
+    replay.show_header()
     chunk_str = ""
     chunk_str += "{\n"
     for ci, chunk in enumerate(replay.replay_body.chunks):
+        if ci in [106]:
+            print("Debug")
+
         cdict = chunk.__dict__
         chunk_str += '  "%s":{"commands": [' % ci
         for ci, cmd in enumerate(cdict["commands"]):
@@ -53,6 +61,9 @@ def get_replaybody_json(filename, output = ""):
                 v = cdict[k]
                 if v is None:
                     chunk_str += '"%s": "%s", ' % (k, v)
+                elif isinstance(v, bytes):
+                    v_str = " ".join(hex(vv)[2:] for vv in v)
+                    chunk_str += '"%s": "%s", ' % (k, v_str)
                 else:
                     chunk_str += '"%s": %s, ' % (k, v)
         chunk_str = chunk_str[: -2]
@@ -65,6 +76,25 @@ def get_replaybody_json(filename, output = ""):
     with open(output, "w") as f:
         f.write(chunk_str)
 
+
+def get_chartflow_data(filename, output=""):
+    replay = KWReplayWithCommands(fname=filename, verbose=False )
+
+    fc = FlowChart(replay)
+
+    res = fc.check_faction()
+    if res <= 0:
+        print("invalid faction")
+        return
+
+    fc.parse_a_chunks()
+    fc.bind_structures_and_units()
+    fc.get_allied_json()
+
+    print()
+    if not output:
+        output = os.path.splitext(filename)[0] + "_fc.json"
+    fc.save_json(output)
 
 
 def main(filename):
@@ -131,9 +161,16 @@ def main(filename):
 if __name__ == "__main__":
 
     fname = "../replays/yj1601.RA3Replay"
-    fname2 = "../replays/盟军vs欧列格.RA3Replay"
-    fname3 = "../replays/yj1801.RA3Replay"
+    fname2 = "../replays/33nd.RA3Replay"
+    fname3 = "../replays/yj1902.RA3Replay"
     fname4 = "../replays/yj2102.RA3Replay"
     fname5 = "../replays/yj2103.RA3Replay"
+    fname6 = "../replays/yj2201.RA3Replay"
+    fname7 = "../replays/学习垄断哥苏联.RA3Replay"
+    fname8 = "../replays/yj2401.RA3Replay"
 
-    get_replaybody_json(fname5)
+    fname9 = "../replays/盟军vs欧列格.RA3Replay"
+    fname10 = "../replays/yj2501.RA3Replay"
+
+    # get_replaybody_json(fname9)
+    get_chartflow_data(fname9)
