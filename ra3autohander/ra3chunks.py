@@ -34,6 +34,8 @@ class RA3Chunk(chunks.Chunk):
             cmd.decode_skill_target(POWERNAMES, POWERCOST)
         elif cmd.cmd_id == 0x03:
             cmd.decode_upgrade_cmd(UPGRADENAMES, UPGRADECOST)
+        elif cmd.cmd_id == 0x04:
+            cmd.decode_holdupgrade_cmd(UPGRADENAMES, UPGRADECOST)
         elif cmd.cmd_id == 0x05:
             cmd.decode_ra3_queue_cmd(UNITNAMES, AFLD_UNITS, UNITCOST)
         elif cmd.cmd_id == 0x06:

@@ -41,6 +41,7 @@ COMMANDTYPE = {
     22: "RIGHTCLICK",
     23: "GenerateUnitId",
     24: "RemoveUnitId",
+    25: "HOLD_UPGRADE"
 
 
 }
@@ -268,17 +269,28 @@ class Command(object):
     def decode_upgrade_cmd(self, UPGRADENAMES, UPGRADECOST):
         self.cmd_ty = TYPE2COMMAND["UPGRADE"]
         data = self.payload
-        self.upgrade = uint42int(data[1:5])
+        self.info["upgrade"] = uint42int(data[1:5])
+        self.info["unit_id"] = uint42int(data[-5:-1])
 
-        self.cost = 0 # by default, 0.
-        if self.upgrade in UPGRADECOST:
-            self.cost = UPGRADECOST[self.upgrade]
+        self.info["cost"] = (0, 0)  # by default, 0.
+        if self.info["upgrade"] in UPGRADECOST:
+            self.info["cost"] = UPGRADECOST[self.info["upgrade"]]
 
-        if self.upgrade in UPGRADENAMES:
-            self.upgrade = UPGRADENAMES[self.upgrade]
+        if self.info["upgrade"] in UPGRADENAMES:
+            self.info["upgrade"] = UPGRADENAMES[self.info["upgrade"]]
         else:
-            self.upgrade = "Upgrade 0x%08X" % self.upgrade
+            self.info["upgrade"] = "Upgrade 0x%08X" % self.info["upgrade"]
 
+    def decode_holdupgrade_cmd(self, UPGRADENAMES, UPGRADECOST):
+        self.cmd_ty = TYPE2COMMAND["HOLD_UPGRADE"]
+        data = self.payload
+        self.info["hold_upgrade"] = uint42int(data[1:5])
+        self.info["unit_id"] = uint42int(data[-5:-1])
+
+        if self.info["hold_upgrade"] in UPGRADENAMES:
+            self.info["hold_upgrade"] = UPGRADENAMES[self.info["hold_upgrade"]]
+        else:
+            self.info["hold_upgrade"] = "Hold Upgrade 0x%08X" % self.info["hold_upgrade"]
 
     def decode_hold_cmd(self, UNITNAMES):
         self.cmd_ty = TYPE2COMMAND["HOLD"]
@@ -433,7 +445,9 @@ class Command(object):
         elif self.is_skill_use():
             return self.info["power"]
         elif cmd_type == "UPGRADE":
-            return self.upgrade
+            return self.info["upgrade"]
+        elif cmd_type == "HOLD_UPGRADE":
+            return self.info["hold_upgrade"]
         elif cmd_type == "PLACEDOWN":
             return "Place down " + self.info.get("building_type", "")
         elif cmd_type == "STARTBUILD":

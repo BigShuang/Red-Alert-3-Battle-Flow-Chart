@@ -170,7 +170,7 @@ if __name__ == "__main__":
     fname8 = "../replays/yj2401.RA3Replay"
 
     fname9 = "../replays/盟军vs欧列格.RA3Replay"
-    fname10 = "../replays/yj2501.RA3Replay"
+    fname10 = "../replays/yj2801.RA3Replay"
 
-    # get_replaybody_json(fname9)
-    get_chartflow_data(fname9)
+    # get_replaybody_json(fname10)
+    get_chartflow_data(fname10)

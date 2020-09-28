@@ -4,7 +4,7 @@ PACK_TIME = 1
 STRUCTURES = {
     # Production structure
     1: [
-        "A Power Plant", "A Boot Camp", "A Allied Ore Refinery", "A Armor Facility", "A Seaport", "A Airbase", "A Defense Bureau",
+        "A Power Plant", "A Boot Camp", "A Allied Ore Refinery", "A Armor Facility", "A Seaport", "A Airbase", "A Defense Bureau", "A Clearance I", "A Clearance II",
         "S Crane", "S Reactor", "S Barracks", "S Ref", "S Factory", "S Super reactor", "S Battle lab", "S Airbase", "S Naval yard",
     ],
     # Defense structure
@@ -15,7 +15,7 @@ STRUCTURES = {
 }
 UNITS = {
     "Infantry": [
-        "A Attact Dog", "A Peacekeeper", "A Javelin Soldier", "A Tanya", "A Spy", "A Allied Engineer",
+        "A Attack Dog", "A Peacekeeper", "A Javelin Soldier", "A Tanya", "A Spy", "A Allied Engineer",
         ],
     "Vehicles": [
         "A Prospecter", "A Riptide ACV", "A Multigunner IFV", "A Guardian Tank", "A Athena Cannon","A Mirage Tank", "A Allied MCV",
@@ -24,21 +24,27 @@ UNITS = {
         "A Vindicator", "A Apollo Fighter", "A Cryocopter", "A Century Bomber",
         ],
     "Vessels": [
-        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer","A Aircarft Carrier","A Allied MCV (NavYd)"
+        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer", "A Aircarft Carrier","A Allied MCV (NavYd)"
     ]
 }
 
 UNIT_FACTORY = {
-    "Infantry": ["A Barracks", "S Barracks"],
-    "Vehicles": ["A Factory", "S Factory"],
+    "Infantry": ["A Boot Camp", "S Barracks"],
+    "Vehicles": ["A Armor Facility", "S Factory"],
     "Aircraft": ["A Airbase", "S Airbase"],
-    "Vessels": ["A Naval yard", "S Naval yard"],
+    "Vessels": ["A Seaport", "S Naval yard"],
 }
 
 FACTION = {
     "S": "Soviet",
     "E": "Empire",
     "A": "Allied"
+}
+
+
+IMAGEPATHMAP = {
+    "Clearance I": "RA3_Heightened_Clearance_Icons",
+    "Clearance II": "RA3_Maximum_Clearance_Icons",
 }
 
 
@@ -88,7 +94,7 @@ def get_unit_kind(queue_line):
 
 def get_queue_factory(sart_time, queue_kind, structures):
     for s in structures:
-        if s in UNIT_FACTORY[queue_kind]:
+        if s.name in UNIT_FACTORY[queue_kind] and s.uid < 0:
             if s.end_time <= sart_time:
                 return s
             else:
@@ -120,18 +126,32 @@ class Unit(object):
         self.uid = -1
         self.details = {}
 
-    def get_end_time(self):
+    def get_end_time(self, index = -1):
         if self.end_time > 0:
             return self.end_time
+        elif index >= 0:
+            # TODO
+            pass
         elif isinstance(self.cost_time, list):
-            return self.start_time + sum(self.cost_time)
+            return self.start_time + sum(self.cost_time) * 15
         else:
-            return self.start_time + self.cost_time
+            return self.start_time + self.cost_time * 15
 
-    def get_json(self):
+    def get_img_name(self):
+        img_name = self.name[2:]
+        if img_name in IMAGEPATHMAP:
+            return IMAGEPATHMAP[img_name]
+        else:
+            return "RA3 %s Icons" % img_name
+
+    def get_json(self, index=-1):
         json_data = {}
         json_data["type"] = "line"
-        json_data["duration"] = (self.get_end_time() - self.start_time) // 15
+        if index < 0:
+            json_data["duration"] = (self.get_end_time() - self.start_time) // 15
+        else:
+            json_data["duration"] = self.cost_time[index]
+
         if self.status == 1:
             json_data["kind"] = "success"
         else:
@@ -150,8 +170,36 @@ class Unit(object):
                     json_data["unit"]["kind"] = k
 
         if json_data["unit"]["kind"]:
-            json_data["unit"]["name"] = "RA3 %s Icons" % self.name[2:]
+            json_data["unit"]["name"] = self.get_img_name()
 
+        return json_data
+
+    def get_unit_json(self, row_prev):
+        """
+        :return: example: {
+            "country": "Soviet",
+            "kind": "Production",
+            "name": "RA3 Crusher Crane Icons",
+            "type": "unit",
+            "row_prev": 0
+        }
+        """
+        json_data = {}
+        json_data["type"] = "unit"
+        json_data["row_prev"] = row_prev
+        json_data["country"] = FACTION[self.name[0]]
+        json_data["kind"] = ""
+        if self.name in STRUCTURES[1]:
+            json_data["kind"] = "Production"
+        elif self.name in STRUCTURES[2]:
+            json_data["kind"] = "Defenses"
+        else:
+            for k in UNITS:
+                if self.name in UNITS[k]:
+                    json_data["kind"] = k
+
+        if json_data["kind"]:
+            json_data["name"] = self.get_img_name()
         return json_data
 
 

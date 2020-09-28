@@ -22,7 +22,7 @@ class FlowChart(object):
         self.root = {}
         self.structures = []
         self.queue_units = {}
-        self.queue_factory = []
+        self.queue_factory = []  # list of factory id
         self.queue_factory_tc = []  # time code for the factory first produce unit
         self.has_wall = False
         self.on_building_structure = {
@@ -74,7 +74,7 @@ class FlowChart(object):
                     k = get_k_by_name(name)
                     unit = self.on_building_structure[k].get(parent, None)
                     # If there's a building under pausing construction, Start building is continue
-                    if unit:
+                    if unit and unit.name == name:
                         if unit.status == 1:
                             continue
                         elif unit.status != 0:
@@ -82,6 +82,10 @@ class FlowChart(object):
                         else:
                             unit.status += 1
                     else:
+                        if unit and unit.status == 1:  # structure built done before and don't need to place
+                            unit = self.on_building_structure[k][parent]
+                            unit.end_time = unit.get_end_time()
+                            self.structures.append(unit)
                         unit = Unit(name, chunk.time_code, parent)
                         self.on_building_structure[k][parent] = unit
                 elif cmd.cmd_id == 8:  # pause building or stop building
@@ -108,7 +112,7 @@ class FlowChart(object):
 
                     k = get_k_by_name(name)
                     unit = self.on_building_structure[k].get(parent, None)
-                    if unit is None or unit.name != name:
+                    if unit is None:
                         raise Exception("Structure 1 Data inconsistency")
                     else:
                         unit = self.on_building_structure[k][parent]
@@ -155,6 +159,7 @@ class FlowChart(object):
                             new_unit.cost_time[born_count] = left_t
                             new_unit.status = 0
 
+                            # reset of start_time is done in cmd id 5
                             paste_unit.cost_time = paste_unit.cost_time[:born_count]
                             paste_unit.end_time = sum(paste_unit.cost_time)
                             paste_unit.count = born_count
@@ -193,6 +198,46 @@ class FlowChart(object):
                             deploy_mcv.prev = pack_mcv
                     self.deploy_list.append(deploy_mcv)
 
+                elif cmd.cmd_id == 3:  # upgrade, same like Start building
+                    parent = cmd.info["unit_id"]
+                    name = cmd.info["upgrade"]
+
+                    k = 1
+                    unit = self.on_building_structure[k].get(parent, None)
+                    # If there's a building under pausing construction, Start building is continue
+                    if unit:
+                        if unit.status == 1:
+                            continue
+                        elif unit.status != 0:
+                            raise Exception("Inconsistent construction data in chunk %s" % ci)
+                        else:
+                            unit.start_time = chunk.time_code
+                            unit.status += 1
+                    else:
+                        unit = Unit(name, chunk.time_code, parent)
+                        unit.cost_time = [cmd.info["cost"][1]]
+                        self.on_building_structure[k][parent] = unit
+
+                elif cmd.cmd_id == 4:  # hold or cancel upgrade, same like pause building or stop building
+                    name = cmd.info["hold_upgrade"]
+                    parent = cmd.info["unit_id"]
+
+                    k = 1
+                    unit = self.on_building_structure[k].get(parent, None)
+
+                    # If there's a building under pausing construction, Start building is continue
+                    if unit and unit.name == name:
+                        if unit.status == -1:
+                            raise Exception("Inconsistent construction data")
+                        else:
+                            if unit.status == 1:
+                                dt = (chunk.time_code - unit.start_time) // 15  # time it has been in production
+                                born_count, left_t = get_born_count(dt, paste_unit.cost_time)
+                                unit.cost_time = [left_t]
+                            unit.status -= 1
+                    else:
+                        raise Exception("Inconsistent construction data")
+
     def bind_structures_and_units(self):
         # for allied
         for i, factory in enumerate(self.queue_factory):
@@ -204,7 +249,7 @@ class FlowChart(object):
             if factory_structure is None:
                 continue
 
-            factory.uid = factory
+            factory_structure.uid = factory
 
         # Classify structures according to their MCV
         for s in self.structures:
@@ -218,7 +263,7 @@ class FlowChart(object):
         unit_mcv_list = []
         for q_i in self.queue_units:
             for unit in self.queue_units[q_i]:
-                if unit.name in ["A MCV", "A MCV (NavYd)"] and unit.status == 1:
+                if unit.name in ["A Allied MCV", "A Allied MCV (NavYd)"] and unit.status == 1:
                     unit_mcv_list.append(unit)
 
         # sort by end time
@@ -228,8 +273,8 @@ class FlowChart(object):
         for deploy_mcv in self.deploy_list:
             if deploy_mcv.prev is None:
                 for unit_mcv in unit_mcv_list:
-                    if unit_mcv.unit_id < 0 and unit_mcv.get_end_time() <= deploy_mcv.command_time:
-                        unit_mcv.unit_id = deploy_mcv.cur_uid
+                    if unit_mcv.uid < 0 and unit_mcv.get_end_time() <= deploy_mcv.command_time:
+                        unit_mcv.uid = deploy_mcv.cur_uid
                         unit_mcv.details["deploy"] = deploy_mcv
                         deploy_mcv.prev = unit_mcv
                         break
@@ -256,6 +301,99 @@ class FlowChart(object):
 
     def get_json_from_root(self):
         pass
+
+    def add_unit_row_json(self, factory, nr):
+        factory_id = factory.uid
+        units = self.queue_units[factory_id]
+        # delete paste and refresh order
+        units = [unit for unit in units if unit.status == 1]
+        units.sort(key=lambda unit: unit.start_time)
+
+        last_time_second = factory.get_end_time() // 15
+        last_time = factory.get_end_time()
+
+        for ui, unit in enumerate(units):
+            # if ui >= 5:
+            #     print("debug")
+
+            st = unit.start_time // 15
+            if st > last_time_second:
+                unused = {
+                    "kind": "unused",
+                    "duration": st - last_time_second,
+                    "type": "line"
+                }
+                self.json_data[nr].append(unused)
+            elif st < last_time_second:
+                unit.start_time = last_time
+            if unit.count > 1:
+                for i in range(unit.count):
+                    unit_json = unit.get_json(i)
+                    self.json_data[nr].append(unit_json)
+            else:
+                unit_json = unit.get_json()
+                self.json_data[nr].append(unit_json)
+            last_time = unit.get_end_time()
+            last_time_second = last_time // 15
+
+            if unit.uid > 0 and unit.details.get("deploy"):
+                unit_nr = len(self.json_data)
+                new_row = [None] * (len(self.json_data[nr]) - 1)
+                new_json = unit.get_unit_json(nr)
+                new_row.append(new_json)
+                self.json_data.append(new_row)
+                self.add_struc_row_json(unit, unit_nr)
+
+    def add_struc_row_json(self, parent, nr):
+        last_time_second = parent.details["deploy"].deploy_time // 15
+        move = {
+            "kind": "move",
+            "duration": last_time_second - parent.get_end_time() // 15,
+            "type": "line"
+        }
+        self.json_data[nr].append(move)
+        sp = parent.details["deploy"].next_id
+        used_sps = []
+        while sp not in used_sps and sp in self.structure_dict:
+            structure_list = self.structure_dict[sp]
+            for s in structure_list:
+                if s.name not in STRUCTURES[1]:
+                    continue
+
+                st = s.start_time // 15
+                if st > last_time_second:
+                    unused = {
+                        "kind": "unused",
+                        "duration": st - last_time_second,
+                        "type": "line"
+                    }
+                    self.json_data[nr].append(unused)
+                unit_json = s.get_json()
+
+                if s.uid >= 0 and s.uid in self.queue_units:
+                    s_nr = len(self.json_data)
+                    new_row = [None] * len(self.json_data[0])
+                    new_json = s.get_unit_json(nr)
+                    new_row.append(new_json)
+                    self.json_data.append(new_row)
+                    self.add_unit_row_json(s, s_nr)
+
+                self.json_data[nr].append(unit_json)
+                last_time_second = s.get_end_time() // 15
+
+            used_sps.append(sp)
+
+            for pack_mcv in self.pack_list:
+                if pack_mcv.cur_id == sp and pack_mcv.depoly is not None and pack_mcv.depoly.deploy_time > 0:
+                    move = {
+                        "kind": "move",
+                        "duration": pack_mcv.depoly.deploy_time // 15 - pack_mcv.start_time // 15,
+                        "type": "line"
+                    }
+                    self.json_data[nr].append(move)
+                    sp = pack_mcv.depoly.next_id
+                    last_time_second = pack_mcv.depoly.deploy_time // 15
+                    break
 
     def get_allied_json(self):
         root = {
@@ -287,6 +425,15 @@ class FlowChart(object):
                     }
                     self.json_data[0].append(unused)
                 unit_json = s.get_json()
+
+                if s.uid >= 0 and s.uid in self.queue_units:
+                    nr = len(self.json_data)
+                    new_row = [None] * len(self.json_data[0])
+                    new_json = s.get_unit_json(0)
+                    new_row.append(new_json)
+                    self.json_data.append(new_row)
+                    self.add_unit_row_json(s, nr)
+
                 self.json_data[0].append(unit_json)
                 last_time_second = s.get_end_time() // 15
 

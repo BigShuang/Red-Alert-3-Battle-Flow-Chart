@@ -14,6 +14,7 @@ CMDNAMES = {
     0x00: "Deploy into a building (MCV/Core)",
     0x01: "Skill with target unit",
     0x03: "Upgrade",
+    0x04: "Hold or Cancel Upgrade",
     0x05: "Queue unit production",
     0x06: "Hold",
     0x07: "Start building structure",
@@ -103,7 +104,7 @@ UNITNAMES = {
     0xFD87E82A: "A Chronosphere",
     0x95D6E965: "A Proton Collider",
 
-    0xDDFC28DE: "A Attact Dog",
+    0xDDFC28DE: "A Attack Dog",
     0x139CBC97: "A Peacekeeper",
     0x9C5D3BB8: "A Javelin Soldier",
     0x53E0EB12: "A Tanya",
@@ -220,7 +221,7 @@ UNITCOST = {
     0xFD87E82A: (3000, 30),  # "A Chronosphere",
     0x95D6E965: (5000, 30),  # "A Proton collider",
 
-    0xDDFC28DE: (200, 2),  # "A Dog",
+    0xDDFC28DE: (200, 2),  # "A Attack Dog",
     0x139CBC97: (200, 5),  # "A Peacekeeper",
     0x9C5D3BB8: (400, 5),  # "A Jav. Troop.",
     0x53E0EB12: (2000, 30),  # "A Tanya",
@@ -398,14 +399,14 @@ UPGRADENAMES = {
 }
 
 UPGRADECOST = {
-    0xB0ADE8C1: 1500,  # clearance I
-    0xC2868D5F: 3000,  # clearance II
-    0xBF3B8DE8: 250,  # dojo II
-    0x3C7E2488: 500,  # dojo III
-    0x17C0F29C: 500,  # mecha bay II
-    0xCF864AD9: 1000,  # mecha bay III
-    0x7EEF69F2: 500,  # docks II
-    0xB8E633CF: 1000,  # docks III
+    0xB0ADE8C1: (1500, 15),  # clearance I
+    0xC2868D5F: (3000, 60),  # clearance II
+    0xBF3B8DE8: (250, 30),  # dojo II
+    0x3C7E2488: (500, 30),  # dojo III
+    0x17C0F29C: (500, 30),  # mecha bay II
+    0xCF864AD9: (1000, 30),  # mecha bay III
+    0x7EEF69F2: (500, 30),  # docks II
+    0xB8E633CF: (1000, 30),  # docks III
 }
 
-BO_COMMANDS = [0x00, 0x01, 0x03, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x32, 0x4E, 0xF5, 0xF6, 0xF9, 0xFE, 0xFF]
+BO_COMMANDS = [0x00, 0x01, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x32, 0x4E, 0xF5, 0xF6, 0xF9, 0xFE, 0xFF]
