@@ -3,11 +3,8 @@
 [View in Chinese(查看中文版说明)](https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart/blob/master/README_ZH.md)
 
 
-- 使用`ra3autohander\主程序.exe`可自动读取录像文件信息，导出流程图信息
-
-
 ## Version 1.1 is complete(No detailed testing)
-**New function: automatic video reading**
+**New feature: automatic video reading**
 - A tool to draw flow chart for ra3 battle
 Open main.html in your browser(Chrome is recommended), then you can draw.
 - `ra3autohander\main.exe` can automatically read video file information and export flow chart information.If you have installed python3(No need to install any third-party libraries), run `ra3autohander\main.py` does the same thing.
