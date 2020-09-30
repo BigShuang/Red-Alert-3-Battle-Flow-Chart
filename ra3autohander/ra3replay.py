@@ -10,7 +10,6 @@ I made some changes here to adapt to my project
 """
 
 
-import io
 from kwreplay import KWReplay
 from utils import *
 import ra3chunks

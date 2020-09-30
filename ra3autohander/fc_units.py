@@ -5,46 +5,52 @@ STRUCTURES = {
     # Production structure
     1: [
         "A Power Plant", "A Boot Camp", "A Allied Ore Refinery", "A Armor Facility", "A Seaport", "A Airbase", "A Defense Bureau", "A Clearance I", "A Clearance II",
-        "S Crane", "S Reactor", "S Barracks", "S Ref", "S Factory", "S Super reactor", "S Battle lab", "S Airbase", "S Naval yard",
+        "S Crane", "S Reactor", "S Barracks", "S Soviet Ore Refinery", "S War Factory", "S Super Reactor", "S Battle Lab", "S Airfield", "S Naval Yard",
     ],
     # Defense structure
     2: [
         "A Allied Fortress Walls", "A Multigunner Turret", "A Spectrum Tower", "A Chronosphere", "A Proton Collider",
-        "S Walls", "S Iron curtain", "S Vaccum imploder", "S Tesla coil", "S Sentry gun", "S Flak cannon",
+        "S Soviet Fortress Wall", "S Iron Curtain", "S Vaccum Imploder", "S Tesla Coil", "S Sentry Gun", "S Flak Cannon",
     ]
 }
 UNITS = {
     "Infantry": [
         "A Attack Dog", "A Peacekeeper", "A Javelin Soldier", "A Tanya", "A Spy", "A Allied Engineer",
+        "S War Bear","S Conscript", "S Flak Trooper","S Combat Engineer", "S Tesla Trooper", "S Natasha",
         ],
     "Vehicles": [
-        "A Prospecter", "A Riptide ACV", "A Multigunner IFV", "A Guardian Tank", "A Athena Cannon","A Mirage Tank", "A Allied MCV",
+        "A Prospecter", "A Riptide ACV", "A Multigunner IFV", "A Guardian Tank", "A Athena Cannon", "A Mirage Tank", "A Allied MCV",
+        "S Ore Collector", "S Sputnik", "S Terror Drone", "S Sickle", "S Bullfrog", "S Hammer Tank", "S V4 Rocket Launcher", "S Apocalypse Tank", "S Soviet MCV",
         ],
     "Aircraft": [
         "A Vindicator", "A Apollo Fighter", "A Cryocopter", "A Century Bomber",
+        "S Twinblade", "S Mig", "S Kirov Airship",
         ],
     "Vessels": [
-        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer", "A Aircarft Carrier","A Allied MCV (NavYd)"
+        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer", "A Aircarft Carrier","A Allied MCV (NavYd)",
+        "S Ore Collector (NavYd)", "S Sputnik (NavYd)", "S Stringray", "S Bullfrog (NavYd)", "S Akula Submarine", "S Dreadnought", "S Soviet MCV (NavYd)",
     ]
 }
 
 UNIT_FACTORY = {
     "Infantry": ["A Boot Camp", "S Barracks"],
-    "Vehicles": ["A Armor Facility", "S Factory"],
-    "Aircraft": ["A Airbase", "S Airbase"],
+    "Vehicles": ["A Armor Facility", "S War Factory"],
+    "Aircraft": ["A Airbase", "S Airfield"],
     "Vessels": ["A Seaport", "S Naval yard"],
 }
 
 FACTION = {
     "S": "Soviet",
     "E": "Empire",
-    "A": "Allied"
+    "A": "Allied",
+    "Rnd": "Random"
 }
 
 
 IMAGEPATHMAP = {
     "Clearance I": "RA3_Heightened_Clearance_Icons",
     "Clearance II": "RA3_Maximum_Clearance_Icons",
+    "Crane": "RA3 Crusher Crane Icons"
 }
 
 
@@ -202,6 +208,9 @@ class Unit(object):
             json_data["name"] = self.get_img_name()
         return json_data
 
+    def __str__(self):
+        return self.name
+
 
 class PackMCV(object):
     def __init__(self, start_time, uid):
@@ -225,3 +234,8 @@ class DeployMCV(object):
         # 9 : 1
         self.deploy_time = (self.command_time + 9 * build_structure_time) // 10
         print("cal_deploy_time: ",self.command_time, build_structure_time, self.deploy_time)
+
+
+class MCVMove(object):
+    def __init__(self):
+        pass

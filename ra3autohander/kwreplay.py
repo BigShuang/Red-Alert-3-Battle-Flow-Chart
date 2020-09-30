@@ -9,11 +9,7 @@ This code file is from https://github.com/forcecore/KWReplayAutoSaver
 """
 
 
-import sys
-import os
-import re
 import io
-import codecs
 from utils import *
 
 
@@ -76,7 +72,7 @@ class Player:
         elif self.game == "CNC3":
             faction_tab = Player.cnc3_faction_tab
 
-        return faction_tab[ self.faction-1 ]
+        return faction_tab[self.faction-1]
 
     def __init__(self, game="KW"):
         self.is_ai = False
@@ -100,8 +96,6 @@ class Player:
             ['HMacroHard', '932E796D', '8094', 'TT', '-1',  '2', '-1', '-1', '0', '1', '-1', '']
         :return:
         """
-
-
         self.ip = encrypt(data[1])
         unknown = data[2]
         self.tt_or_ft = data[3]

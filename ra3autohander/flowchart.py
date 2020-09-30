@@ -2,11 +2,6 @@ import json
 from fc_units import *
 
 
-class MCVMove(object):
-    def __init__(self):
-        pass
-
-
 class FlowChart(object):
     def __init__(self, replay, player_index=0):
         self.pi = player_index
@@ -20,7 +15,7 @@ class FlowChart(object):
 
         ]
         self.root = {}
-        self.structures = []
+
         self.queue_units = {}
         self.queue_factory = []  # list of factory id
         self.queue_factory_tc = []  # time code for the factory first produce unit
@@ -30,6 +25,9 @@ class FlowChart(object):
             2: {},  # Production Structure
         }
 
+        # first add all structure to this list during parsing chunks
+        self.structures = []
+        # classify structures by parent in function bind_structures_and_units
         self.structure_pa = []
         self.structure_dict = {}
 
@@ -46,6 +44,9 @@ class FlowChart(object):
         if self.p_faction == 'Rnd':
             for chunk in self.replay.replay_body.chunks:
                 for cmd in chunk.commands:
+                    if cmd.player_id != self.pi:
+                        continue
+                    chunk.decode_cmd(cmd)
                     if cmd.cmd_id == 7:
                         faction = cmd.info["building_type"][0]
                         if faction in ['E', 'A', 'S']:
@@ -64,6 +65,8 @@ class FlowChart(object):
         # for allied
         for ci, chunk in enumerate(self.replay.replay_body.chunks):
             for cmd in chunk.commands:
+                if cmd.player_id != self.pi:
+                    continue
                 chunk.decode_cmd(cmd)
                 if cmd.cmd_id == 7:  # Start building
                     parent = cmd.info.get("parent", -1)
@@ -173,19 +176,24 @@ class FlowChart(object):
                 elif cmd.cmd_id == 254 and str(cmd) == "Pack MCV":  #pack mcv
                     unit_id = cmd.info["unit_id"]
                     st = chunk.time_code
+                    child_unit = self.on_building_structure[1].get(unit_id, None)
+                    if child_unit and child_unit.get_end_time() < st and child_unit.status == 1:
+                        self.structures.append(child_unit)
+                        self.on_building_structure[1][unit_id] = None
                     pack_mcv = PackMCV(chunk.time_code, unit_id)
                     self.pack_list.append(pack_mcv)
                     for j in range(ci, len(self.replay.replay_body.chunks)):
                         chunk_j = self.replay.replay_body.chunks[j]
+
                         if len(chunk_j.commands) >= 2 and chunk_j.time_code - st <= PACK_TIME * 15:
                             find_cmd_246 = False
                             for j_cmd in chunk.commands:
-                                if j_cmd.cmd_id == 249 and unit_id in j_cmd.info["remove_uids"]:
+                                if j_cmd.player_id == self.pi and j_cmd.cmd_id == 249 and unit_id in j_cmd.info["remove_uids"]:
                                     find_cmd_246 = True
                                     break
                             if find_cmd_246:
                                 for j_cmd in chunk.commands:
-                                    if j_cmd.cmd_id == 246:
+                                    if j_cmd.player_id == self.pi and j_cmd.cmd_id == 246:
                                         pack_mcv.next_ids = j_cmd.info["generate_uids"]
                                         break
                 elif cmd.cmd_id == 0:  # "Deploy Core/MCV"
@@ -238,13 +246,160 @@ class FlowChart(object):
                     else:
                         raise Exception("Inconsistent construction data")
 
+    def parse_s_chunks(self):
+        # for soviet
+        for ci, chunk in enumerate(self.replay.replay_body.chunks):
+            # if ci >= 1882: for debug
+            #     print(ci)
+
+            for cmd in chunk.commands:
+                if cmd.player_id != self.pi:
+                    continue
+                chunk.decode_cmd(cmd)
+                if cmd.cmd_id == 7:  # Start building
+                    parent = cmd.info.get("parent", -1)
+                    name = cmd.info["building_type"]
+
+                    k = get_k_by_name(name)
+                    unit = self.on_building_structure[k].get(parent)
+                    # If there's a building under pausing construction, Start building is continue
+                    if unit and unit.name == name:
+                        if unit.status == 1 and unit.get_end_time() < chunk.time_code:
+                            self.on_building_structure[k][parent] = None
+
+                        # elif unit.status != 0:
+                            # raise Exception("Inconsistent construction data in chunk %s" % ci)
+                        elif unit.status == 0:
+                            unit.start_time = chunk.time_code
+                            unit.status += 1
+                elif cmd.cmd_id == 8:  # pause building or stop building
+                    parent = cmd.info.get("parent", -1)
+                    name = cmd.info["building_type"]
+                    if name == "A Allied Fortress Walls":
+                        continue
+
+                    k = get_k_by_name(name)
+                    unit = self.on_building_structure[k].get(parent, None)
+                    # If there's a building under pausing construction, Start building is continue
+                    if unit and unit.name == name:
+                        if unit.status == -1:
+                            raise Exception("Inconsistent construction data")
+                        elif unit.status == 1:
+                            dt = (chunk.time_code - unit.start_time) // 15  # time it has been in production
+                            born_count, left_t = get_born_count(dt, unit.cost_time)
+                            unit.cost_time = [left_t]
+                            unit.status -= 1
+                        else:
+                            unit.end_time = chunk.time_code
+                            self.on_building_structure[k][parent] = None
+                            unit.status -= 1
+                    # else:
+                    #     raise Exception("Inconsistent construction data")
+                elif cmd.cmd_id == 9:  # Place building
+                    parent = cmd.info.get("parent", -1)
+                    name = cmd.info["building_type"]
+                    if name == "A Allied Fortress Walls":
+                        continue
+
+                    k = get_k_by_name(name)
+                    unit = self.on_building_structure[k].get(parent, None)
+                    if unit is not None and unit.get_end_time() >= chunk.time_code:
+                        unit.status = -1
+                        # unit.end_time = chunk.time_code
+
+                    new_unit = Unit(name, chunk.time_code, parent)
+                    new_unit.cost_time = [cmd.info["cost"][1]]
+                    self.structures.append(new_unit)
+                    self.on_building_structure[k][parent] = new_unit
+
+                elif cmd.cmd_id == 5:  # Queue units
+                    unit_ty = cmd.info["unit_ty"]
+                    factory = cmd.info["factory"]
+                    queue_line = self.queue_units.get(factory, [])
+                    paste_unit = get_prev_one(queue_line, unit_ty)
+                    if paste_unit and paste_unit.status == 0:
+                        # It was suspended before. Now it's on
+                        paste_unit.start_time = chunk.time_code
+                        paste_unit.status = 1
+                    else:
+                        unit = Unit(unit_ty, chunk.time_code, factory)
+                        unit.count = cmd.info["cnt"]
+                        cost_time = cmd.info["cost"][1]
+                        unit.cost_time = [cost_time] * unit.count
+                        if factory in self.queue_units:
+                            self.queue_units[factory].append(unit)
+                        else:
+                            self.queue_units[factory] = [unit]
+
+                        if factory not in self.queue_factory:
+                            self.queue_factory.append(factory)
+                            self.queue_factory_tc.append(chunk.time_code)
+                elif cmd.cmd_id == 6:  # Hold/Cancel queue units
+                    unit_ty = cmd.info["unit_ty"]
+                    factory = cmd.info["factory"]
+                    queue_line = self.queue_units.get(factory, [])
+                    paste_unit = get_prev_one(queue_line, unit_ty)
+                    if paste_unit is None or paste_unit.status == -1:
+                        raise QueueInconsistency()
+                    elif paste_unit == 1:
+                        dt = (chunk.time_code - paste_unit.start_time) // 15  # time it has been in production
+                        born_count, left_t = get_born_count(dt, paste_unit.cost_time)
+                        if born_count > 0:
+                            new_unit = Unit(unit_ty, chunk.time_code, factory)
+                            new_unit.count = paste_unit.count - born_count
+                            new_unit.cost_time = paste_unit.cost_time[born_count:]
+                            new_unit.cost_time[born_count] = left_t
+                            new_unit.status = 0
+
+                            # reset of start_time is done in cmd id 5
+                            paste_unit.cost_time = paste_unit.cost_time[:born_count]
+                            paste_unit.end_time = sum(paste_unit.cost_time)
+                            paste_unit.count = born_count
+                        else:
+                            paste_unit.cost_time[0] = left_t
+                            paste_unit.status = 0
+
+                    elif paste_unit.status == 0:
+                        paste_unit.status = -1
+
+                elif cmd.cmd_id == 254 and str(cmd) == "Pack MCV":  #pack mcv
+                    unit_id = cmd.info["unit_id"]
+                    st = chunk.time_code
+                    pack_mcv = PackMCV(chunk.time_code, unit_id)
+                    self.pack_list.append(pack_mcv)
+                    for j in range(ci, len(self.replay.replay_body.chunks)):
+                        chunk_j = self.replay.replay_body.chunks[j]
+
+                        if len(chunk_j.commands) >= 2 and chunk_j.time_code - st <= PACK_TIME * 15:
+                            find_cmd_246 = False
+                            for j_cmd in chunk.commands:
+                                if j_cmd.player_id == self.pi and j_cmd.cmd_id == 249 and unit_id in j_cmd.info["remove_uids"]:
+                                    find_cmd_246 = True
+                                    break
+                            if find_cmd_246:
+                                for j_cmd in chunk.commands:
+                                    if j_cmd.player_id == self.pi and j_cmd.cmd_id == 246:
+                                        pack_mcv.next_ids = j_cmd.info["generate_uids"]
+                                        break
+                elif cmd.cmd_id == 0:  # "Deploy Core/MCV"
+                    unit_id = cmd.info["unit_id"]
+                    deploy_mcv = DeployMCV(chunk.time_code, unit_id)
+
+                    for pack_mcv in self.pack_list[::-1]:
+                        if pack_mcv.depoly is None and unit_id in pack_mcv.next_ids:
+                            pack_mcv.depoly = deploy_mcv
+                            deploy_mcv.prev = pack_mcv
+                    self.deploy_list.append(deploy_mcv)
+
     def bind_structures_and_units(self):
         # for allied
         for i, factory in enumerate(self.queue_factory):
+            # find the factory for the units
             start_time = self.queue_factory_tc[i]
             queue_kind = get_unit_kind(self.queue_units[factory])
             if queue_kind == "":
-                raise QueueInconsistency()
+                continue
+                # raise QueueInconsistency()
             factory_structure = get_queue_factory(start_time, queue_kind, self.structures)
             if factory_structure is None:
                 continue
@@ -289,18 +444,34 @@ class FlowChart(object):
 
         # remove all deploy mcv that can not find prev unit or packed one
         self.deploy_list = [deploy_mcv for deploy_mcv in self.deploy_list if deploy_mcv.prev is not None]
+
+        # for soviet crane
+        crane_list = []
+        if self.p_faction == "S":
+            for structure in self.structures:
+                if structure.name == "S Crane":
+                    crane_list.append(structure)
+
         # set deploy mcv for all Classified structures
         for sp in self.structure_pa[1:]:
             structures = self.structure_dict[sp]
             first_time = structures[0].start_time
+
+            find_parent = False
             for deploy_mcv in self.deploy_list:
                 if deploy_mcv.next_id < 0 and deploy_mcv.command_time < first_time:
                     deploy_mcv.next_id = sp
                     deploy_mcv.cal_deploy_time(first_time)
+                    find_parent = True
                     break
 
-    def get_json_from_root(self):
-        pass
+            if not find_parent:
+                for crane in crane_list:
+                    if crane.uid < 0 and crane.status==1 and crane.get_end_time() < first_time:
+                        # set crane as the parent
+                        crane.uid = sp
+                        crane.details["is_crane"] = True
+                        break
 
     def add_unit_row_json(self, factory, nr):
         factory_id = factory.uid
@@ -344,47 +515,75 @@ class FlowChart(object):
                 self.json_data.append(new_row)
                 self.add_struc_row_json(unit, unit_nr)
 
+    def add_structure_to_row(self, s, nr, last_time_second):
+        st = s.start_time // 15
+        if st > last_time_second:
+            unused = {
+                "kind": "unused",
+                "duration": st - last_time_second,
+                "type": "line"
+            }
+            self.json_data[nr].append(unused)
+        unit_json = s.get_json()
+
+        if s.uid >= 0 and s.uid in self.queue_units:
+            # is factory that can produce unit
+            s_nr = len(self.json_data)
+            new_row = [None] * len(self.json_data[nr])
+            new_json = s.get_unit_json(nr)
+            new_row.append(new_json)
+            self.json_data.append(new_row)
+            self.add_unit_row_json(s, s_nr)
+        elif s.uid >= 0 and s.details.get("is_crane"):
+            s_nr = len(self.json_data)
+            new_row = [None] * len(self.json_data[nr])
+            new_json = s.get_unit_json(nr)
+            new_row.append(new_json)
+            self.json_data.append(new_row)
+            self.add_struc_row_json(s, s_nr)
+
+        self.json_data[nr].append(unit_json)
+        last_time_second = s.get_end_time() // 15
+
+        return last_time_second
+
     def add_struc_row_json(self, parent, nr):
-        last_time_second = parent.details["deploy"].deploy_time // 15
-        move = {
-            "kind": "move",
-            "duration": last_time_second - parent.get_end_time() // 15,
-            "type": "line"
-        }
-        self.json_data[nr].append(move)
-        sp = parent.details["deploy"].next_id
+        if parent.details.get("is_crane"):
+            last_time_second = parent.get_end_time() // 15
+            sp = parent.uid
+        else:
+            last_time_second = parent.details["deploy"].deploy_time // 15
+            move = {
+                "kind": "move",
+                "duration": last_time_second - parent.get_end_time() // 15,
+                "type": "line"
+            }
+            self.json_data[nr].append(move)
+            sp = parent.details["deploy"].next_id
         used_sps = []
         while sp not in used_sps and sp in self.structure_dict:
             structure_list = self.structure_dict[sp]
             for s in structure_list:
                 if s.name not in STRUCTURES[1]:
                     continue
-
-                st = s.start_time // 15
-                if st > last_time_second:
-                    unused = {
-                        "kind": "unused",
-                        "duration": st - last_time_second,
-                        "type": "line"
-                    }
-                    self.json_data[nr].append(unused)
-                unit_json = s.get_json()
-
-                if s.uid >= 0 and s.uid in self.queue_units:
-                    s_nr = len(self.json_data)
-                    new_row = [None] * len(self.json_data[0])
-                    new_json = s.get_unit_json(nr)
-                    new_row.append(new_json)
-                    self.json_data.append(new_row)
-                    self.add_unit_row_json(s, s_nr)
-
-                self.json_data[nr].append(unit_json)
-                last_time_second = s.get_end_time() // 15
+                last_time_second = self.add_structure_to_row(s, nr, last_time_second)
 
             used_sps.append(sp)
 
             for pack_mcv in self.pack_list:
                 if pack_mcv.cur_id == sp and pack_mcv.depoly is not None and pack_mcv.depoly.deploy_time > 0:
+                    # add the last one which may be in on_building
+                    last_one = self.on_building_structure[1][sp]
+                    if last_one and last_one.status == 1 and last_one.get_end_time() < pack_mcv.start_time // 15:
+                        last_time_second = self.add_structure_to_row(last_one, nr, last_time_second)
+
+                    if last_time_second < pack_mcv.start_time // 15:
+                        unused = {
+                            "kind": "unused",
+                            "duration": pack_mcv.start_time // 15 - last_time_second,
+                            "type": "line"
+                        }
+                        self.json_data[nr].append(unused)
                     move = {
                         "kind": "move",
                         "duration": pack_mcv.depoly.deploy_time // 15 - pack_mcv.start_time // 15,
@@ -395,11 +594,11 @@ class FlowChart(object):
                     last_time_second = pack_mcv.depoly.deploy_time // 15
                     break
 
-    def get_allied_json(self):
+    def get_json_from_root(self):
         root = {
-            "country": "Allied",
+            "country": FACTION[self.p_faction],
             "kind": "Production",
-            "name": "RA3 Allied Construction Yard Icons",
+            "name": "RA3 %s Construction Yard Icons" % FACTION[self.p_faction],
             "type": "unit",
         }
 
@@ -416,31 +615,25 @@ class FlowChart(object):
                 if s.name not in STRUCTURES[1]:
                     continue
 
-                st = s.start_time // 15
-                if st > last_time_second:
-                    unused = {
-                        "kind": "unused",
-                        "duration": st - last_time_second,
-                        "type": "line"
-                    }
-                    self.json_data[0].append(unused)
-                unit_json = s.get_json()
-
-                if s.uid >= 0 and s.uid in self.queue_units:
-                    nr = len(self.json_data)
-                    new_row = [None] * len(self.json_data[0])
-                    new_json = s.get_unit_json(0)
-                    new_row.append(new_json)
-                    self.json_data.append(new_row)
-                    self.add_unit_row_json(s, nr)
-
-                self.json_data[0].append(unit_json)
-                last_time_second = s.get_end_time() // 15
+                last_time_second = self.add_structure_to_row(s, 0, last_time_second)
 
             used_sps.append(sp)
 
             for pack_mcv in self.pack_list:
                 if pack_mcv.cur_id == sp and pack_mcv.depoly is not None and pack_mcv.depoly.deploy_time > 0:
+                    # add the last one which may be in on_building
+                    last_one = self.on_building_structure[1][sp]
+                    if last_one and last_one.status == 1 and last_one.get_end_time() < pack_mcv.start_time // 15:
+                        last_time_second = self.add_structure_to_row(last_one, 0, last_time_second)
+
+                    if last_time_second < pack_mcv.start_time // 15:
+                        unused = {
+                            "kind": "unused",
+                            "duration": pack_mcv.start_time // 15 - last_time_second,
+                            "type": "line"
+                        }
+                        self.json_data[0].append(unused)
+
                     move = {
                         "kind": "move",
                         "duration": pack_mcv.depoly.deploy_time // 15 - pack_mcv.start_time // 15,

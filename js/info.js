@@ -176,12 +176,12 @@ var node_imgs = {
         },
         "Infantry": {
             "RA3 Combat Engineer Icons": "images/nodes/Soviet/Infantry/RA3 Combat Engineer Icons.png",
-            "RA3 Concript Icons": "images/nodes/Soviet/Infantry/RA3 Concript Icons.png",
+            "RA3 Conscript Icons": "images/nodes/Soviet/Infantry/RA3 Conscript Icons.png",
             "RA3 Flak Trooper Icons": "images/nodes/Soviet/Infantry/RA3 Flak Trooper Icons.png",
             "RA3 Natasha Icons": "images/nodes/Soviet/Infantry/RA3 Natasha Icons.png",
             "RA3 Tesla Trooper Icons": "images/nodes/Soviet/Infantry/RA3 Tesla Trooper Icons.png",
             "RA3 War Bear Icons": "images/nodes/Soviet/Infantry/RA3 War Bear Icons.png",
-            "RA3U Desolator Trooper Icons": "images/nodes/Soviet/Infantry/RA3U Desolator Trooper Icons.png",
+            "RA3U Desolator Trooper Icons": "images/nodes/Soviet/Infantry/RA3U Desolator Trooper Icons.png"
         },
         "Production": {
             "RA3 Airfield Icons": "images/nodes/Soviet/Production/RA3 Airfield Icons.png",
