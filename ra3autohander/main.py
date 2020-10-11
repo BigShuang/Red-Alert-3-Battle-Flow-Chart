@@ -27,6 +27,15 @@ TEXT = {
               "His GitHub: https://github.com/BigShuang\n",
     "Details": "See the readme doc for details of the tool: \n"
                "https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart",
+
+    "map_name": "Map name: ",
+    "factions": {
+        "S": "Soviet",
+        "E": "Empire",
+        "A": "Allied",
+        "Rnd": "Random"
+    }
+
 }
 
 

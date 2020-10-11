@@ -1,0 +1,2 @@
+pyinstaller -F -w main_zh.py
+pyinstaller -F -w main.py

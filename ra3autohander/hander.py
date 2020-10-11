@@ -3,12 +3,11 @@
 from ra3replay import KWReplayWithCommands
 import os
 from flowchart import FlowChart
-from fc_units import FACTION
 
 
 def get_replay(filename):
     replay = KWReplayWithCommands(fname=filename, verbose=False)
-    replay.players = [p for p in replay.players if p.is_player()]
+    replay.players = [p for p in replay.players if not p.is_commentator()]
     return replay
 
 
@@ -121,10 +120,6 @@ def get_chartflow_data(filename, pi=0, replay=None, output=""):
     return output
 
 
-def get_faction(player):
-    faction = player.decode_faction()
-    return FACTION.get(faction, faction)
-
 if __name__ == "__main__":
 
     fname = "../replays/yj1601.RA3Replay"
@@ -138,9 +133,10 @@ if __name__ == "__main__":
 
     fname9 = "../replays/盟军vs欧列格.RA3Replay"
     fname10 = "../replays/yj2801.RA3Replay"
+    fname11 = "../replays/这都能翻？.RA3Replay"
 
-    get_replaybody_json(fname9, 0)
-    # r = get_chartflow_data(fname7, 1)
+    get_replaybody_json(fname11)
+    # r = get_chartflow_data(fname7, 0)
 
     # replay = get_replay(fname2)
     # print(len(replay.replay_body.chunks))

@@ -30,6 +30,14 @@ TEXT = {
               "他的CSDN: https://blog.csdn.net/python1639er\n",
     "Details": "详情请查看该工具的readme文档: \n"
                "https://github.com/BigShuang/Red-Alert-3-Battle-Flow-Chart",
+
+    "map_name": "地图名: ",
+    "factions": {
+        "S": "苏联",
+        "E": "帝国",
+        "A": "盟军",
+        "Rnd": "随机"
+    }
 }
 
 

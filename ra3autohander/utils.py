@@ -3,7 +3,7 @@
 This code file is from https://github.com/forcecore/KWReplayAutoSaver
 """
 
-import struct # bin file enc/dec
+import struct  # bin file enc/dec
 import hashlib
 import time
 import subprocess

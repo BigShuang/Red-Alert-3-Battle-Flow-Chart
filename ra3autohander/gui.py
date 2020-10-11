@@ -1,6 +1,8 @@
 # usr/bin/env python
 # -*- coding:utf-8- -*-
-
+"""
+Implement a visual interface based on Tkinter library for the tool
+"""
 import tkinter as tk
 from tkinter import ttk
 from tkinter.filedialog import askopenfilename
@@ -59,6 +61,11 @@ class GUI(tk.Frame):
         # self.show_result(self.TEXT["Author"])
 
     def show_result(self, res, kind="normal"):
+        """
+        show string info in the self.show_board
+        :param res: the string to show
+        :param kind: determine the show color, normal is blue, otherwise it's red
+        """
         self.show_board.config(state="normal")
         self.show_board.delete("1.0", tk.END)
         self.show_board.insert(tk.END, res)
@@ -106,9 +113,11 @@ class GUI(tk.Frame):
         self.plist.delete(0, tk.END)
 
     def browse_file(self):
+        # select a ra3 replay file
         self.fn = askopenfilename(initialdir="../", title="Select a File",
                                   filetypes=(("RA3Replay files", "*.RA3Replay*"), ("all files", "*.*")))
 
+        # show the base info of the ra3 replay file selected
         self.init_plist()
         if self.fn:
             try:
@@ -122,15 +131,24 @@ class GUI(tk.Frame):
             self.info.configure(text=self.TEXT["info_1"])
 
     def show_players(self):
+        """
+        show players in the left player board, and show map info in the right show board
+        :return:
+        """
         self.replay = get_replay(self.fn)
         if self.replay:
+            # show map name in right show board
+            map_info = "%s %s" % (self.TEXT.get("map_name"), self.replay.map_name)
+            self.show_result(map_info)
+            # show players info in the left player board
             for i in range(len(self.replay.players)):
                 p = self.replay.players[i]
-                pinfo = "{:15} ".format(p.name)
+                p_info = "{:15} ".format(p.name)
                 if p.is_human_player():
-                    pinfo += "{:10} {:5}".format(get_faction(p), p.team)
+                    # TODO, guess the faction if random
+                    faction = p.decode_faction()
+                    faction = self.TEXT.get("factions", {}).get(faction)
+                    p_info += "{:10} {:5}".format(faction, p.team)
 
-                self.plist.insert(i + 1, pinfo)
-
-
+                self.plist.insert(i + 1, p_info)
 

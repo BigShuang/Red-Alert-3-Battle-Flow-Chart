@@ -43,7 +43,6 @@ FACTION = {
     "S": "Soviet",
     "E": "Empire",
     "A": "Allied",
-    "Rnd": "Random"
 }
 
 
@@ -180,7 +179,7 @@ class Unit(object):
 
         return json_data
 
-    def get_unit_json(self, row_prev):
+    def get_unit_json_from_row_prev(self, row_prev):
         """
         :return: example: {
             "country": "Soviet",
@@ -218,7 +217,13 @@ class PackMCV(object):
         self.cur_id = uid
 
         self.next_ids = []
-        self.depoly = None
+        self.deploy = None
+
+    def __str__(self):
+        s = "cur id: %s" % self.cur_id
+        if self.deploy:
+            s += " -> new id: %s" % self.deploy.cur_uid
+        return s
 
 
 class DeployMCV(object):

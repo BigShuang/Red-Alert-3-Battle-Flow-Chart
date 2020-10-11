@@ -10,7 +10,7 @@ This code file is from https://github.com/forcecore/KWReplayAutoSaver
 
 
 import chunks
-from game_config import *
+from replay_config import *
 
 
 class RA3Chunk(chunks.Chunk):
