@@ -11,7 +11,7 @@ import os
 
 INDENT = "    "
 NODES_PATH = os.path.join("images", "nodes")
-JS_FILE = "info.js"
+JS_FILE = os.path.join("js", "info.js")
 
 
 def gen_path_dict_string(dir_path, depth=0):

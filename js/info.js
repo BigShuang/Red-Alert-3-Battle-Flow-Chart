@@ -181,7 +181,7 @@ var node_imgs = {
             "RA3 Natasha Icons": "images/nodes/Soviet/Infantry/RA3 Natasha Icons.png",
             "RA3 Tesla Trooper Icons": "images/nodes/Soviet/Infantry/RA3 Tesla Trooper Icons.png",
             "RA3 War Bear Icons": "images/nodes/Soviet/Infantry/RA3 War Bear Icons.png",
-            "RA3U Desolator Trooper Icons": "images/nodes/Soviet/Infantry/RA3U Desolator Trooper Icons.png"
+            "RA3U Desolator Trooper Icons": "images/nodes/Soviet/Infantry/RA3U Desolator Trooper Icons.png",
         },
         "Production": {
             "RA3 Airfield Icons": "images/nodes/Soviet/Production/RA3 Airfield Icons.png",
@@ -231,7 +231,10 @@ var node_imgs = {
         },
         "Vessels": {
             "RA3 Akula Submarine Icons": "images/nodes/Soviet/Vessels/RA3 Akula Submarine Icons.png",
+            "RA3 Bullfrog (NavYd) Icons": "images/nodes/Soviet/Vessels/RA3 Bullfrog (NavYd) Icons.png",
             "RA3 Dreadnought Icons": "images/nodes/Soviet/Vessels/RA3 Dreadnought Icons.png",
+            "RA3 Soviet MCV (NavYd) Icons": "images/nodes/Soviet/Vessels/RA3 Soviet MCV (NavYd) Icons.png",
+            "RA3 Sputnik (NavYd) Icons": "images/nodes/Soviet/Vessels/RA3 Sputnik (NavYd) Icons.png",
             "RA3 Stingray Icons": "images/nodes/Soviet/Vessels/RA3 Stingray Icons.png",
         },
     },

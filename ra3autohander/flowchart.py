@@ -103,7 +103,10 @@ class FlowChart(object):
                     # If there's a building under pausing construction, Start building is continue
                     if unit:
                         if unit.status == -1:
-                            raise Exception("Inconsistent construction data")
+                            # It can be placed several times after construction,
+                            # Maybe it's due to online stuck delay
+                            print("Right left one building more than twice")
+                            # raise Exception("Inconsistent construction data")
                         else:
                             unit.status -= 1
                     else:
@@ -117,7 +120,10 @@ class FlowChart(object):
                     k = get_k_by_name(name)
                     unit = self.on_building_structure[k].get(parent, None)
                     if unit is None:
-                        raise Exception("Structure 1 Data inconsistency")
+                        # It can be placed several times after construction,
+                        # Maybe it's due to online stuck delay
+                        print("Placed one building more than once")
+                        # raise Exception("Structure 1 Data inconsistency")
                     else:
                         unit = self.on_building_structure[k][parent]
                         unit.end_time = chunk.time_code

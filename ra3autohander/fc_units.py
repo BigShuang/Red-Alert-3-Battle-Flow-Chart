@@ -16,7 +16,7 @@ STRUCTURES = {
 UNITS = {
     "Infantry": [
         "A Attack Dog", "A Peacekeeper", "A Javelin Soldier", "A Tanya", "A Spy", "A Allied Engineer",
-        "S War Bear","S Conscript", "S Flak Trooper","S Combat Engineer", "S Tesla Trooper", "S Natasha",
+        "S War Bear", "S Conscript", "S Flak Trooper", "S Combat Engineer", "S Tesla Trooper", "S Natasha",
         ],
     "Vehicles": [
         "A Prospecter", "A Riptide ACV", "A Multigunner IFV", "A Guardian Tank", "A Athena Cannon", "A Mirage Tank", "A Allied MCV",
@@ -27,8 +27,8 @@ UNITS = {
         "S Twinblade", "S Mig", "S Kirov Airship",
         ],
     "Vessels": [
-        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer", "A Aircarft Carrier","A Allied MCV (NavYd)",
-        "S Ore Collector (NavYd)", "S Sputnik (NavYd)", "S Stringray", "S Bullfrog (NavYd)", "S Akula Submarine", "S Dreadnought", "S Soviet MCV (NavYd)",
+        "A Prospecter (NavYd)", "A Dolphin", "A Riptide ACV (NavYd)", "A Hydrofoil", "A Assault Destroyer", "A Aircraft Carrier","A Allied MCV (NavYd)",
+        "S Ore Collector (NavYd)", "S Sputnik (NavYd)", "S Stingray", "S Bullfrog (NavYd)", "S Akula Submarine", "S Dreadnought", "S Soviet MCV (NavYd)",
     ]
 }
 
@@ -36,7 +36,7 @@ UNIT_FACTORY = {
     "Infantry": ["A Boot Camp", "S Barracks"],
     "Vehicles": ["A Armor Facility", "S War Factory"],
     "Aircraft": ["A Airbase", "S Airfield"],
-    "Vessels": ["A Seaport", "S Naval yard"],
+    "Vessels": ["A Seaport", "S Naval Yard"],
 }
 
 FACTION = {
@@ -100,7 +100,7 @@ def get_unit_kind(queue_line):
 def get_queue_factory(sart_time, queue_kind, structures):
     for s in structures:
         if s.name in UNIT_FACTORY[queue_kind] and s.uid < 0:
-            if s.end_time <= sart_time:
+            if s.end_time <= sart_time:  # end_time
                 return s
             else:
                 return None

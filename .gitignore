@@ -2,3 +2,5 @@
 */.idea
 */.idea/
 *.idea/
+*./ra3autohander/dist
+*./ra3autohander/build

@@ -85,7 +85,7 @@ UNITNAMES = {
     0xFFA811AE: "S Kirov Airship",
     0x951764B9: "S Ore Collector (NavYd)",
     0x92718B35: "S Sputnik (NavYd)",
-    0xAFF62E78: "S Stringray",
+    0xAFF62E78: "S Stingray",
     0xCCBD2C91: "S Bullfrog (NavYd)",
     0x8D0A384A: "S Akula Submarine",
     0xBCEF51B9: "S Dreadnaught",
@@ -126,7 +126,7 @@ UNITNAMES = {
     0x1C331EB6: "A Riptide ACV (NavYd)",
     0x2E211A99: "A Hydrofoil",
     0x5AE534FC: "A Assault Destroyer",
-    0x09705D80: "A Aircarft Carrier",
+    0x09705D80: "A Aircraft Carrier",
     0x648D1440: "A Allied MCV (NavYd)",
 
     0xF8C50039: "E Walls",
@@ -246,7 +246,7 @@ UNITCOST = {
     0x1C331EB6: (900, 10),  # "A Riptide (NavYd)",
     0x2E211A99: (900, 10),  # "A Hydrofoil",
     0x5AE534FC: (1800, 20),  # "A A. Destroyer",
-    0x09705D80: (2000, 30),  # "A A. Carrier",
+    0x09705D80: (2000, 30),  # "A Aircraft Carrier",
     0x648D1440: (5000, 60),  # "A MCV (NavYd)",
 
     0xF8C50039: (10, 5),  # "E Wall",

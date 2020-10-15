@@ -133,10 +133,11 @@ if __name__ == "__main__":
 
     fname9 = "../replays/盟军vs欧列格.RA3Replay"
     fname10 = "../replays/yj2801.RA3Replay"
-    fname11 = "../replays/这都能翻？.RA3Replay"
+    fname11 = "../replays/vs._GoW__[Red3.org] (1).ra3replay"
 
-    get_replaybody_json(fname11)
-    # r = get_chartflow_data(fname7, 0)
+
+    # get_replaybody_json(fname11, 0)
+    r = get_chartflow_data(fname11, 0)
 
     # replay = get_replay(fname2)
     # print(len(replay.replay_body.chunks))
