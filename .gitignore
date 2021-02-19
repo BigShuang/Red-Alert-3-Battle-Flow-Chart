@@ -4,3 +4,12 @@
 *.idea/
 *./ra3autohander/dist
 *./ra3autohander/build
+*./dist
+*./build
+
+build/
+dist/
+ra3autohander/build/
+ra3autohander/dist/
+*.manifest
+*.spec
