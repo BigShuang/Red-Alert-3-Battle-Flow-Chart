@@ -109,8 +109,13 @@ class FlowChart(object):
                             # raise Exception("Inconsistent construction data")
                         else:
                             unit.status -= 1
+
+                        if unit.status == -1:
+                            unit.end_time = chunk.time_code
+                            self.on_building_structure[k][parent] = None
                     else:
-                        raise Exception("Inconsistent construction data")
+                        print("Inconsistent construction data")
+                        # raise Exception("Inconsistent construction data")
                 elif cmd.cmd_id == 9:  # Place building
                     parent = cmd.info.get("parent", -1)
                     name = cmd.info["building_type"]
@@ -258,8 +263,9 @@ class FlowChart(object):
     def parse_s_chunks(self):
         # for soviet
         for ci, chunk in enumerate(self.replay.replay_body.chunks):
-            # if ci >= 3948:  # for debug
-            #     print(ci)
+            if ci >= 22120:  # for debug
+                print(ci)
+            # print(ci)
 
             for cmd in chunk.commands:
                 if cmd.player_id != self.pi:
@@ -292,7 +298,8 @@ class FlowChart(object):
                     # If there's a building under pausing construction, Start building is continue
                     if unit and unit.name == name:
                         if unit.status == -1:
-                            raise Exception("Inconsistent construction data")
+                            print("Inconsistent construction data")
+                            # raise Exception("Inconsistent construction data")
                         elif unit.status == 1:
                             dt = (chunk.time_code - unit.start_time) // 15  # time it has been in production
                             born_count, left_t = get_born_count(dt, unit.cost_time)
@@ -314,7 +321,8 @@ class FlowChart(object):
                     unit = self.on_building_structure[k].get(parent, None)
                     if unit is not None and unit.get_end_time() >= chunk.time_code:
                         unit.status = -1
-                        # unit.end_time = chunk.time_code
+                        if unit.end_time < 0:
+                            unit.end_time = chunk.time_code
 
                     new_unit = Unit(name, chunk.time_code, parent)
                     new_unit.cost_time = [cmd.info["cost"][1]]
@@ -344,20 +352,24 @@ class FlowChart(object):
                             self.queue_factory.append(factory)
                             self.queue_factory_tc.append(chunk.time_code)
                 elif cmd.cmd_id == 6:  # Hold/Cancel queue units
+                    # TODO: click one time, delete one unit
                     unit_ty = cmd.info["unit_ty"]
                     factory = cmd.info["factory"]
                     queue_line = self.queue_units.get(factory, [])
                     paste_unit = get_prev_one(queue_line, unit_ty)
                     if paste_unit is None or paste_unit.status == -1:
-                        raise QueueInconsistency()
-                    elif paste_unit == 1:
+                        print("QueueInconsistency")
+                        # raise QueueInconsistency()
+                    elif paste_unit.status == 1:
                         dt = (chunk.time_code - paste_unit.start_time) // 15  # time it has been in production
                         born_count, left_t = get_born_count(dt, paste_unit.cost_time)
                         if born_count > 0:
                             new_unit = Unit(unit_ty, chunk.time_code, factory)
                             new_unit.count = paste_unit.count - born_count
                             new_unit.cost_time = paste_unit.cost_time[born_count:]
-                            new_unit.cost_time[born_count] = left_t
+
+                            if len(new_unit.cost_time) > 0:
+                                new_unit.cost_time[0] = left_t
                             new_unit.status = 0
 
                             # reset of start_time is done in cmd id 5
@@ -534,10 +546,12 @@ class FlowChart(object):
             if unit.count > 1:
                 for i in range(unit.count):
                     unit_json = unit.get_json(i)
-                    self.json_data[nr].append(unit_json)
+                    if "duration" in unit_json and unit_json["duration"] > 0:
+                        self.json_data[nr].append(unit_json)
             else:
                 unit_json = unit.get_json()
-                self.json_data[nr].append(unit_json)
+                if "duration" in unit_json and unit_json["duration"] > 0:
+                    self.json_data[nr].append(unit_json)
             last_time = unit.get_end_time()
             last_time_second = last_time // 15
 
@@ -558,7 +572,8 @@ class FlowChart(object):
                 "duration": st - last_time_second,
                 "type": "line"
             }
-            self.json_data[nr].append(unused)
+            if unused["duration"] > 0:
+                self.json_data[nr].append(unused)
         unit_json = s.get_json()
 
         if s.uid >= 0 and s.uid in self.queue_units:
@@ -577,7 +592,8 @@ class FlowChart(object):
             self.json_data.append(new_row)
             self.add_struc_row_json(s, s_nr)
 
-        self.json_data[nr].append(unit_json)
+        if "duration" in unit_json and unit_json["duration"] > 0:
+            self.json_data[nr].append(unit_json)
         last_time_second = s.get_end_time() // 15
 
         return last_time_second
@@ -625,7 +641,8 @@ class FlowChart(object):
                             "duration": pack_mcv.start_time // 15 - last_time_second,
                             "type": "line"
                         }
-                        self.json_data[nr].append(unused)
+                        if unused["duration"]>0:
+                            self.json_data[nr].append(unused)
                     move = {
                         "kind": "move",
                         "duration": pack_mcv.deploy.deploy_time // 15 - pack_mcv.start_time // 15,
@@ -683,7 +700,8 @@ class FlowChart(object):
                             "duration": pack_mcv.start_time // 15 - last_time_second,
                             "type": "line"
                         }
-                        self.json_data[0].append(unused)
+                        if unused["duration"]>0:
+                            self.json_data[0].append(unused)
 
                     move = {
                         "kind": "move",
@@ -697,6 +715,8 @@ class FlowChart(object):
 
             if not find_mcv_packed and last_one and last_one.status == 1 and self.p_faction == "A":
                 last_time_second = self.add_structure_to_row(last_one, 0, last_time_second)
+            elif not find_mcv_packed:
+                break
 
     def save_json(self, save_path):
         total = {

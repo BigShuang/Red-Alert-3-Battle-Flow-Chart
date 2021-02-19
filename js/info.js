@@ -71,9 +71,12 @@ var node_imgs = {
         },
         "Vessels": {
             "RA3 Aircraft Carrier Icons": "images/nodes/Allied/Vessels/RA3 Aircraft Carrier Icons.png",
+            "RA3 Allied MCV (NavYd) Icons": "images/nodes/Allied/Vessels/RA3 Allied MCV (NavYd) Icons.png",
             "RA3 Assault Destroyer Icons": "images/nodes/Allied/Vessels/RA3 Assault Destroyer Icons.png",
             "RA3 Dolphin Icons": "images/nodes/Allied/Vessels/RA3 Dolphin Icons.png",
             "RA3 Hydrofoil Icons": "images/nodes/Allied/Vessels/RA3 Hydrofoil Icons.png",
+            "RA3 Prospector (NavYd) Icons": "images/nodes/Allied/Vessels/RA3 Prospector (NavYd) Icons.png",
+            "RA3 Riptide ACV (NavYd) Icons": "images/nodes/Allied/Vessels/RA3 Riptide ACV (NavYd) Icons.png",
         },
     },
     "Imperial": {

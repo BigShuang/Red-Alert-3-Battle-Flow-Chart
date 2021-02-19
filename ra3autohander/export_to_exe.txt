@@ -1,2 +1,2 @@
-pyinstaller -F -w main_zh.py
-pyinstaller -F -w main.py
+pyinstaller -F -w ra3autohander/main_zh.py
+pyinstaller -F -w ra3autohander/main.py

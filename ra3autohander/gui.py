@@ -82,16 +82,17 @@ class GUI(tk.Frame):
             return
         index = items[0]
 
-        try:
+        if True:
+        # try:
             res = get_chartflow_data(self.fn, index, self.replay)
             if res in self.TEXT:
                 res_str = self.TEXT[res]
             else:
                 res_str = self.TEXT["OK"] + res
             self.show_result(res_str)
-        except Exception as e:
-            res_str = self.TEXT["Error"] + str(e)
-            self.show_result(res_str, "error")
+        # except Exception as e:
+        #     res_str = self.TEXT["Error"] + str(e)
+        #     self.show_result(res_str, "error")
 
     def export_2(self):
         if len(self.fn) == 0:
